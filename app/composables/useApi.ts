@@ -1,6 +1,6 @@
 export const useApi = () => {
   const { site } = useAppConfig()
-  const apiBase = site.apiBase || 'http://localhost:8000/api/v1' // fallback
+  const apiBase = `${site.apiBase}/api/v1` || 'http://localhost:8000/api/v1' // fallback
 
   const get = async (endpoint: string) =>
     await $fetch(`${apiBase}${endpoint}`)

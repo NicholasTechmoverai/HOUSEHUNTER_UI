@@ -6,12 +6,22 @@ export const useUserStore = defineStore('user', {
     token: null as string | null,
     loading: false,
     error: null as any,
-    endpoints: useEndpoints(),
+    redirectRoutes: {
+      verify_email: '/auth/verify-email',
+      reset_password: '/auth/reset-password',
+      verify_phone: '/auth/verify-phone',
+      dashboard: '/',
+      login: '/auth/login'
+    }
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.user,
+    isAuthenticated: (state) => !!state.user && !!state.token,
     profile: (state) => state.user,
+    hasEmailVerified: (state) => state.user?.email_verified || false,
+    hasPhoneVerified: (state) => state.user?.phone_verified || false,
+    requiresVerification: (state) =>
+      !state.user?.email_verified || !state.user?.phone_verified
   },
 
   actions: {
@@ -20,23 +30,96 @@ export const useUserStore = defineStore('user', {
       if (token) this.token = token
     },
 
-    logout() {
+    clearUser() {
       this.user = null
       this.token = null
+      this.error = null
     },
 
-    async login(credentials: { email: string; password: string ,remember_me?:boolean}) {
+    logout() {
+      const authStore = useAuthStore()
+      this.clearUser()
+      authStore.clearPendingActions()
+      authStore.clearLastAttemptedRoute()
+    },
+
+    async login(credentials: { email: string; password: string; remember_me?: boolean }) {
       const { post } = useApi()
+      const endpoints = useEndpoints()
+      const authStore = useAuthStore()
+
       this.loading = true
       this.error = null
 
       try {
-        const res = await post(this.endpoints.user.login, credentials)
-        this.setUser(res.user ?? res.data ?? res, res.token)
-        return res
-      } catch (err) {
-        this.error = err
-        throw err
+        const response = await post(endpoints.user.login, credentials)
+
+        if (response.success) {
+          this.setUser(response.user, response.token)
+
+          if (!response.user?.email_verified) {
+            authStore.setVerificationInfo({
+              identifier: credentials.email,
+              type: 'email',
+              edit: false,
+              requiredFor: ['login'],
+              message: 'Please verify your email to continue.',
+              redirectAfter: this.redirectRoutes.dashboard
+            })
+
+            return {
+              success: true,
+              message: response.message,
+              redirectTo: this.redirectRoutes.verify_email,
+              requiresVerification: true
+            }
+          }
+
+          if (!response.user?.phone_verified) {
+            authStore.setVerificationInfo({
+              identifier: response.user.phone_number || credentials.email,
+              type: 'phone',
+              edit: false,
+              requiredFor: ['login'],
+              message: 'Please verify your phone number to continue.',
+              redirectAfter: this.redirectRoutes.dashboard
+            })
+
+            return {
+              success: true,
+              message: response.message,
+              redirectTo: this.redirectRoutes.verify_phone,
+              requiresVerification: true
+            }
+          }
+
+          const pendingAction = authStore.restorePendingActionsAfterAuth()
+
+          if (pendingAction?.type === 'redirect') {
+            return {
+              success: true,
+              message: response.message,
+              redirectTo: pendingAction.path,
+              requiresVerification: false
+            }
+          }
+
+          return {
+            success: true,
+            message: response.message,
+            redirectTo: this.redirectRoutes.dashboard,
+            requiresVerification: false
+          }
+        }
+
+        return {
+          success: false,
+          message: response.message || 'Login failed'
+        }
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message || error.message || 'Login failed'
+        throw error
       } finally {
         this.loading = false
       }
@@ -44,44 +127,214 @@ export const useUserStore = defineStore('user', {
 
     async register(payload: Record<string, any>) {
       const { post } = useApi()
+      const endpoints = useEndpoints()
+      const authStore = useAuthStore()
+
       this.loading = true
       this.error = null
 
       try {
-        const res = await post(this.endpoints.user.register, payload)
-        this.setUser(res.user ?? res.data ?? res, res.token)
-        return res
-      } catch (err) {
-        this.error = err
-        throw err
+        const response = await post(endpoints.user.register, payload)
+        if (response.success) {
+          this.setUser(response.user, response.token)
+          authStore.setVerificationInfo({
+            identifier: payload.email,
+            type: 'email',
+            edit: false,
+            requiredFor: ['registration'],
+            message: 'Please verify your email to activate your account.',
+            redirectAfter: this.redirectRoutes.dashboard
+          })
+
+          return {
+            ...response,
+            redirectTo: this.redirectRoutes.verify_email
+          }
+        }
+        
+
+        return response
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message || error.message || 'Registration failed'
+        throw error
       } finally {
         this.loading = false
       }
     },
 
-    async fetchUser() {
-      if (this.user) return this.user
+    async fetchUser(forceRefresh = false) {
+      if (this.user && !forceRefresh) return this.user
 
       const { get } = useApi()
+      const endpoints = useEndpoints()
+
       this.loading = true
       this.error = null
 
       try {
-        const res = await get(this.endpoints.user.profile)
-        this.user = res.user ?? res.data ?? res
+        const response = await get(endpoints.user.profile)
+        this.user = response.user || response.data || response
         return this.user
-      } catch (err) {
-        this.error = err
-        this.user = null
-        throw err
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          this.clearUser()
+        }
+        this.error =
+          error.response?.data?.message || error.message || 'Failed to fetch user'
+        throw error
       } finally {
         this.loading = false
       }
     },
+
+    async verifyEmail(credentials: { email: string; code: string }) {
+      const { post } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        const response = await post(endpoints.user.verifyEmail, credentials)
+
+        if (response.success && this.user) {
+          this.user.email_verified = true
+          this.user.email_verified_at = new Date().toISOString()
+        }
+
+        return response
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Email verification failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async verifyPhone(credentials: { phone: string; code: string }) {
+      const { post } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        const response = await post(endpoints.user.verifyPhone, credentials)
+
+        if (response.success && this.user) {
+          this.user.phone_verified = true
+          this.user.phone_verified_at = new Date().toISOString()
+        }
+
+        return response
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Phone verification failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateProfile(data: Record<string, any>) {
+      const { patch } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        const response = await patch(endpoints.user.profile, data)
+
+        if (response.success) {
+          this.user = { ...this.user, ...response.user }
+        }
+
+        return response
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Profile update failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async changePassword(data: { current_password: string; new_password: string }) {
+      const { post } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        return await post(endpoints.user.changePassword, data)
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Password change failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async forgotPassword(email: string) {
+      const { post } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        return await post(endpoints.user.forgotPassword, { email })
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Password reset request failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async resetPassword(data: { token: string; password: string }) {
+      const { post } = useApi()
+      const endpoints = useEndpoints()
+
+      this.loading = true
+      this.error = null
+
+      try {
+        return await post(endpoints.user.resetPassword, data)
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'Password reset failed'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    }
   },
 
   persist: {
     storage: process.client ? localStorage : undefined,
     paths: ['user', 'token'],
-  },
+    serializer: {
+      serialize: JSON.stringify,
+      deserialize: JSON.parse
+    }
+  }
 })

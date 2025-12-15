@@ -9,8 +9,8 @@
       </template>
 
       <template #right>
+        <LoggedIcon />
         <UColorModeButton />
-
       </template>
     </UHeader>
 </template>

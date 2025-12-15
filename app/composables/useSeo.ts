@@ -21,11 +21,15 @@ export const useSeo = ({ title, description, image }: SEOOptions = {}) => {
     title: seoTitle,
     meta: [
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'description', content: seoDescription }
+      { name: 'description', content: seoDescription },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
     ],
     link: [
       { rel: 'canonical', href: canonical },
-      { rel: 'icon', href: config.site.favicon }
+      { rel: 'icon', href: config.site.favicon },
+      { rel: 'apple-touch-icon', href: '/icons/icon-192.png' }
+
     ],
     htmlAttrs: { lang: 'en' }
   })

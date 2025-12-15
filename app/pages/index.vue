@@ -1,4 +1,8 @@
 <template>
+  <div class="m-3 space-y-2 flex-col md:fl">
+    <NavigationBreadCrumb />
+    <SearchCard />
+  </div>
   <!-- Apartments Section -->
   <UContainer class="py-8">
     <h1 class="text-3xl font-bold mb-6">Apartments</h1>
