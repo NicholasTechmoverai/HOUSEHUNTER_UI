@@ -101,6 +101,7 @@ export default defineNuxtConfig({
     global: true,
     dirs: [
       { path: '~/components/apartments', pathPrefix: false },
+      { path: '~/components/property', pathPrefix: false },
       { path: '~/components/rentals', pathPrefix: false },
       { path: '~/components/swaps', pathPrefix: false },
       { path: '~/components/user', pathPrefix: false },

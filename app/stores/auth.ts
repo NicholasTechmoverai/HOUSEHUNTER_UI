@@ -324,7 +324,9 @@ export const useAuthStore = defineStore('auth', {
         // Listen for messages from the popup
         const messageHandler = (event: MessageEvent) => {
           // Security: only accept messages from our backend
-          if (event.origin !== useAppConfig().site.apiBase) return;
+          if (event.origin !== useAppConfig().site.apiBase) {
+            throw new Error('unauthorized origin'+ event.origin)
+          };
 
           const data = event.data;
 

@@ -45,11 +45,8 @@
 
     <!-- Actual content -->
     <div v-else class="grid gap-4">
-      <RentalCard
-        v-for="rental in rentals"
-        :key="rental.id"
-        :rental="rental"
-      />
+      RENTAL CARD
+      <RentalCard/>
     </div>
   </UContainer>
 </template>
