@@ -110,7 +110,9 @@ export default defineNuxtConfig({
     ]
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css',
+        'leaflet/dist/leaflet.css'
+  ],
 
   robots: {
     userAgent: '*',

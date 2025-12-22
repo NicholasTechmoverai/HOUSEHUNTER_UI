@@ -105,7 +105,7 @@ const items = computed(() => [
 </script>
 
 <template>
-    <div class="space-y-4">
+    <div class="space-y-4 flex flex-col m-2 border border-gray-200 dark:border-gray-800 p-2 rounded-md items-center">
         <UFieldGroup>
             <UButton label="Upload settings" icon="i-lucide-settings" color="neutral" variant="subtle" />
 
@@ -116,7 +116,7 @@ const items = computed(() => [
 
         <UFileUpload v-model="files" :layout="viewLayout" multiple :interactive="false" icon="i-lucide-image"
             label="Property media" description="Images up to 50MB and videos (no size limit)"
-            class="w-full max-w-md min-h-[12rem]">
+            class="w-full max-w-[900px] min-h-[12rem]">
             <template #actions="{ open }">
                 <UButton label="Select files" icon="i-lucide-upload" color="neutral" variant="outline"
                     @click="open()" />

@@ -1,322 +1,337 @@
 <template>
-  <div class="p-4">
+  <div class="p-1 md:p-4 max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Property Rules</h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        Define rules that guests must follow. Required rules must be accepted by guests during booking.
-      </p>
-    </div>
-
-    <!-- Main Editor Area -->
-    <div class="mb-6">
       <div class="flex items-center justify-between mb-3">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Rules Editor - Paste or type multiple rules here
-        </label>
-        <div class="flex items-center gap-2">
-          <button 
-            @click="showFormattingHelp = !showFormattingHelp"
-            class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-          >
-            ℹ️ Formatting help
-          </button>
-        </div>
-      </div>
-
-      <!-- Formatting Help -->
-      <div v-if="showFormattingHelp" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
-        <p class="font-medium mb-2">Quick formatting:</p>
-        <ul class="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400">
-          <li>Start a line with <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">##</code> for a rule title</li>
-          <li>Add <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[Required]</code> or <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">[Optional]</code> after the title</li>
-          <li>Add <code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">(Category: Safety)</code> at the end</li>
-          <li>Use blank lines to separate rules</li>
-        </ul>
-        <button 
-          @click="insertSample"
-          class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          Insert sample rules →
-        </button>
-      </div>
-
-      <!-- Bulk Rules Editor -->
-      <div class="border border-gray-300 dark:border-gray-600 rounded-lg mb-4 overflow-hidden">
-        <div class="flex border-b border-gray-300 dark:border-gray-600">
-          <button 
-            @click="activeTab = 'bulk'"
-            :class="['px-4 py-2 text-sm font-medium', activeTab === 'bulk' ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400']"
-          >
-            📝 Bulk Edit
-          </button>
-          <button 
-            @click="activeTab = 'preview'"
-            :class="['px-4 py-2 text-sm font-medium', activeTab === 'preview' ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400']"
-          >
-            👁️ Preview
-          </button>
-        </div>
-
-        <!-- Bulk Edit Tab -->
-        <div v-if="activeTab === 'bulk'" class="p-4">
-          <textarea
-            v-model="bulkInput"
-            placeholder="Example:
-## No Smoking [Required] (Category: Safety)
-This is a strictly non-smoking property.
-
-## Check-in Time [Required] (Category: Check-in/out)
-Check-in is available after 3:00 PM.
-
-## Pet Policy [Optional] (Category: Pets)
-Pets are allowed with approval."
-            class="w-full h-64 p-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            @input="parseBulkInput"
-          ></textarea>
-          
-          <div class="flex justify-between items-center mt-3">
-            <div class="text-xs text-gray-500 dark:text-gray-400">
-              {{ parsedRules.length }} rules detected • {{ requiredCount }} required
-            </div>
-            <div class="flex gap-2">
-              <button
-                @click="clearBulkInput"
-                class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Clear
-              </button>
-              <button
-                @click="applyBulkRules"
-                :disabled="parsedRules.length === 0"
-                :class="['px-3 py-1 text-sm rounded-lg', parsedRules.length > 0 ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed']"
-              >
-                Apply {{ parsedRules.length }} Rules
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Preview Tab -->
-        <div v-if="activeTab === 'preview'" class="p-4">
-          <div class="space-y-4 max-h-64 overflow-y-auto">
-            <div v-for="(rule, index) in parsedRules" :key="index" class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div class="flex items-start justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <h4 class="font-medium text-gray-900 dark:text-white">{{ rule.title }}</h4>
-                  <span :class="['text-xs px-2 py-0.5 rounded-full', rule.mandatory ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400']">
-                    {{ rule.mandatory ? 'Required' : 'Optional' }}
-                  </span>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ categoryLabels[rule.category] || rule.category }}
-                  </span>
-                </div>
-              </div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{{ rule.content }}</p>
-            </div>
-            
-            <div v-if="parsedRules.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500">
-              No rules parsed yet. Switch to "Bulk Edit" tab to add rules.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Current Rules -->
-    <div class="mb-6">
-      <div class="flex items-center justify-between mb-4">
         <div>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">Current Rules</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ activeRules.length }} rules • {{ mandatoryCount }} required
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Property Rules</h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Rules that guests must agree to before booking
           </p>
         </div>
-        <button
-          @click="exportRules"
-          class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          📋 Copy Rules
-        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">
+            {{ activeRules.length }} rules • {{ mandatoryCount }} required
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Rules Editor -->
+    <div class=" rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
+      <!-- Editor Header -->
+      <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h3 class="font-medium text-gray-900 dark:text-white">Rules Editor</h3>
+            <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+              Click numbers to edit
+            </span>
+          </div>
+          <button
+            @click="addNewRule"
+            class="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Rule
+          </button>
+        </div>
       </div>
 
-      <!-- Rules List -->
-      <div v-if="activeRules.length > 0" class="space-y-3">
-        <div 
-          v-for="rule in activeRules" 
-          :key="rule.id"
-          class="group p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
-        >
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  v-model="rule.mandatory"
-                  @change="markUnsaved"
-                  class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+      <!-- Rules List in Single Editor -->
+      <div class="p-1 md:p-4">
+        <!-- Empty State -->
+        <div v-if="activeRules.length === 0" class="text-center py-8">
+          <div class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600">
+            <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">No rules added yet</p>
+          <button
+            @click="addNewRule"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            Create First Rule
+          </button>
+        </div>
+
+        <!-- Rules List with Numbers -->
+        <div v-else class="space-y-4">
+          <div 
+            v-for="(rule, index) in activeRules" 
+            :key="rule.id"
+            class="rule-item group border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all duration-200"
+            :class="{ 'bg-blue-50 dark:bg-blue-900/10 border-blue-300 dark:border-blue-500': editingRuleId === rule.id }"
+          >
+            <!-- Rule Header with Number -->
+            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 rounded-t-lg">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <!-- Rule Number -->
+                  <div class="rule-number">
+                    <button
+                      @click="toggleEdit(rule.id)"
+                      class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-semibold hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      :title="editingRuleId === rule.id ? 'Save changes' : 'Edit this rule'"
+                    >
+                      {{ index + 1 }}
+                    </button>
+                  </div>
+                  
+                  <!-- Rule Title -->
+                  <div class="flex-1 min-w-0">
+                    <div v-if="editingRuleId === rule.id" class="flex items-center gap-2">
+                      <input
+                        v-model="rule.title"
+                        @input="markUnsaved"
+                        class="text-lg font-semibold bg-transparent border-b border-blue-300 focus:outline-none focus:border-blue-500 w-full"
+                        placeholder="Rule title"
+                      />
+                    </div>
+                    <h3 v-else class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                      {{ rule.title || 'Untitled Rule' }}
+                    </h3>
+                  </div>
+                </div>
+
+                <!-- Required/Optional Toggle -->
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="toggleMandatory(rule.id)"
+                    :class="[
+                      'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+                      rule.is_mandatory 
+                        ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ]"
+                    :title="rule.is_mandatory ? 'Required - guests must accept' : 'Optional - informational only'"
+                  >
+                    {{ rule.is_mandatory ? 'Required' : 'Optional' }}
+                    <span class="ml-1">
+                      {{ rule.is_mandatory ? '✓' : '○' }}
+                    </span>
+                  </button>
+                  
+                  <!-- Delete Button -->
+                  <button
+                    @click="removeRule(rule.id)"
+                    class="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    title="Delete rule"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rule Content -->
+            <div class="p-4">
+              <!-- Description Editor -->
+              <div v-if="editingRuleId === rule.id" class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Rule Description
+                </label>
+                <UEditor
+                  v-model="rule.description"
+                  :toolbar="[
+                    ['bold', 'italic'],
+                    ['bulletList', 'orderedList'],
+                    ['clearFormat']
+                  ]"
+                  :editor-class="[
+                    'min-h-[120px] p-3',
+                    'border border-gray-300 dark:border-gray-600 rounded-lg',
+                    '',
+                    'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  ]"
+                  placeholder="Describe the rule in detail..."
+                  @update="() => updateRuleContent(rule.id, rule.description)"
                 />
-                <h4 class="font-semibold text-gray-900 dark:text-white">{{ rule.title }}</h4>
-                <span :class="['text-xs px-2 py-0.5 rounded-full', rule.mandatory ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400']">
-                  {{ rule.mandatory ? 'Required' : 'Optional' }}
+              </div>
+              
+              <!-- Read-only View -->
+              <div v-else class="prose prose-sm dark:prose-invert max-w-none">
+                <div v-if="rule.description" v-html="rule.description"></div>
+                <div v-else class="text-gray-400 dark:text-gray-500 italic">
+                  No description provided
+                </div>
+              </div>
+            </div>
+
+            <!-- Rule Footer -->
+            <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg flex items-center justify-between text-xs">
+              <div class="text-gray-500 dark:text-gray-400">
+                <span>Rule #{{ index + 1 }}</span>
+                <span class="mx-2">•</span>
+                <span>{{ formatDate(rule.created_at) }}</span>
+                <span v-if="rule.updated_at" class="ml-2">
+                  • Updated: {{ formatDate(rule.updated_at) }}
                 </span>
               </div>
               
-              <div class="flex items-center gap-3 mb-2">
-                <select
-                  v-model="rule.category"
-                  @change="markUnsaved"
-                  class="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800"
-                >
-                  <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-                <span class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ getCategoryIcon(rule.category) }}
-                </span>
+              <div v-if="rule.is_mandatory" class="flex items-center gap-1 text-red-600 dark:text-red-400 font-medium">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                Guests must accept
               </div>
             </div>
-            
-            <div class="flex items-center gap-1">
-              <button
-                @click="editRule(rule)"
-                class="p-1.5 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                title="Edit"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
-              <button
-                @click="confirmDelete(rule.id)"
-                class="p-1.5 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                title="Delete"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Rule Content Editor -->
-          <UEditor
-            v-model="rule.content"
-            :toolbar="[
-              ['bold', 'italic'],
-              ['bulletList'],
-              ['clearFormat']
-            ]"
-            :editor-class="[
-              'text-sm',
-              'min-h-[60px]',
-              'p-2',
-              'rounded',
-              'border border-gray-300 dark:border-gray-600',
-              'bg-white dark:bg-gray-800',
-              'focus:outline-none focus:ring-1 focus:ring-blue-500'
-            ]"
-            @update="() => updateRuleContent(rule.id, rule.content)"
-            placeholder="Rule description..."
-          />
-          
-          <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs">
-            <span class="text-gray-500 dark:text-gray-400">
-              Created: {{ formatDate(rule.createdAt) }}
-              <span v-if="rule.updatedAt"> • Updated: {{ formatDate(rule.updatedAt) }}</span>
-            </span>
-            <span v-if="rule.mandatory" class="flex items-center gap-1 text-red-600 dark:text-red-400">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              Guests must accept
-            </span>
           </div>
         </div>
-      </div>
-      
-      <div v-else class="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-        <div class="text-gray-400 dark:text-gray-500 mb-2">
-          <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+
+        <!-- Add Rule Button at Bottom -->
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <button
+            @click="addNewRule"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-200 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Another Rule
+          </button>
         </div>
-        <p class="text-gray-500 dark:text-gray-400">No rules added yet</p>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Use the bulk editor above to add multiple rules at once</p>
       </div>
     </div>
 
-    <!-- Additional Notes -->
-    <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-        Additional Notes
-      </label>
-      <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-        <UEditor
-          v-model="generalNotes"
-          :toolbar="[['bold', 'italic'], ['bulletList'], ['clearFormat']]"
-          :editor-class="[
-            'min-h-[80px] p-3',
-            'bg-white dark:bg-gray-800',
-            'focus:outline-none'
-          ]"
-          placeholder="Any additional notes or information for guests..."
-          @update="markUnsaved"
-        />
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="  rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Quick Templates</h4>
+        <div class="space-y-2">
+          <button
+            v-for="template in quickTemplates"
+            :key="template.title"
+            @click="applyTemplate(template)"
+            class="w-full text-left px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          >
+            <div class="flex items-center justify-between">
+              <span>{{ template.title }}</span>
+              <span :class="['text-xs px-1.5 py-0.5 rounded', template.is_mandatory ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400']">
+                {{ template.is_mandatory ? 'Required' : 'Optional' }}
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class=" rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Import/Export</h4>
+        <div class="space-y-2">
+          <button
+            @click="exportRules"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            Export Rules
+          </button>
+          <button
+            @click="importRules"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            Import Rules
+          </button>
+        </div>
+      </div>
+
+      <div class=" rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <h4 class="font-medium text-gray-900 dark:text-white mb-2">Statistics</h4>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-600 dark:text-gray-400">Total Rules</span>
+            <span class="font-semibold text-gray-900 dark:text-white">{{ activeRules.length }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-600 dark:text-gray-400">Required Rules</span>
+            <span class="font-semibold text-red-600 dark:text-red-400">{{ mandatoryCount }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-600 dark:text-gray-400">Optional Rules</span>
+            <span class="font-semibold text-gray-600 dark:text-gray-400">{{ activeRules.length - mandatoryCount }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Save Section -->
-    <div v-if="hasUnsavedChanges" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4 shadow-lg">
+    <div v-if="hasUnsavedChanges" class="sticky bottom-0 left-0 right-0  border-t border-gray-200 dark:border-gray-800 p-4 shadow-lg">
       <div class="max-w-4xl mx-auto flex items-center justify-between">
-        <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <span>You have unsaved changes</span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span class="font-medium">Unsaved Changes</span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ activeRules.length }} rules will be saved
+          </p>
         </div>
         <div class="flex gap-3">
           <button
             @click="discardChanges"
-            class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+            class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Discard
           </button>
           <button
             @click="saveRules"
-            class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
           >
-            Save Changes
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Save All Rules
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-        <div class="text-center mb-4">
-          <div class="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+    <!-- Import Modal -->
+    <div v-if="showImportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class=" rounded-xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Import Rules</h3>
+          <button @click="showImportModal = false" class="text-gray-400 hover:text-gray-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </div>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Delete Rule</h3>
-          <p class="text-gray-500 dark:text-gray-400">Are you sure you want to delete this rule? This action cannot be undone.</p>
+          </button>
         </div>
+        
+        <div class="mb-4">
+          <textarea
+            v-model="importText"
+            placeholder="Paste rules here (one per line):
+1. No smoking [Required]
+2. Check-in after 3 PM [Required]
+3. Pets allowed [Optional]"
+            class="w-full h-48 p-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg  focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+        
         <div class="flex gap-3">
           <button
-            @click="cancelDelete"
+            @click="showImportModal = false"
             class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
           <button
-            @click="deleteRule"
-            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            @click="processImport"
+            class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
           >
-            Delete
+            Import
           </button>
         </div>
       </div>
@@ -325,85 +340,86 @@ Pets are allowed with approval."
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
+// Match the Django model structure
 interface PropertyRule {
   id: string
-  title: string
-  content: string
-  category: string
-  mandatory: boolean
-  createdAt: string
-  updatedAt?: string
+  title: string | null
+  description: string | null
+  is_mandatory: boolean
+  created_at: string
+  updated_at?: string
 }
 
 const props = defineProps<{
-  modelValue?: string
   rules?: PropertyRule[]
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
   'update:rules': [rules: PropertyRule[]]
   'save': []
   'change': [hasChanges: boolean]
 }>()
 
 // State
-const generalNotes = ref(props.modelValue || '')
 const activeRules = ref<PropertyRule[]>(props.rules || [])
 const unsavedChanges = ref(false)
-const showDeleteConfirm = ref(false)
-const showFormattingHelp = ref(false)
-const activeTab = ref<'bulk' | 'preview'>('bulk')
+const editingRuleId = ref<string | null>(null)
+const showImportModal = ref(false)
+const importText = ref('')
 
-// Bulk editing
-const bulkInput = ref('')
-const parsedRules = ref<PropertyRule[]>([])
-const ruleToDelete = ref<string | null>(null)
-
-// Categories
-const categoryOptions = [
-  { value: 'checkin', label: 'Check-in/out' },
-  { value: 'safety', label: 'Safety' },
-  { value: 'guest', label: 'Guest Rules' },
-  { value: 'facility', label: 'Facilities' },
-  { value: 'pet', label: 'Pets' },
-  { value: 'payment', label: 'Payment' },
-  { value: 'other', label: 'Other' }
+// Quick templates matching common property rules
+const quickTemplates: PropertyRule[] = [
+  {
+    id: 'template-1',
+    title: 'No Smoking',
+    description: 'This is a strictly non-smoking property. Smoking is prohibited in all areas including balconies.',
+    is_mandatory: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'template-2',
+    title: 'Check-in Time',
+    description: 'Check-in is available after 3:00 PM. Early check-in may be available upon request.',
+    is_mandatory: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'template-3',
+    title: 'Check-out Time',
+    description: 'Check-out is required by 11:00 AM. Late check-out may be arranged with prior approval.',
+    is_mandatory: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'template-4',
+    title: 'Maximum Guests',
+    description: 'Maximum occupancy is limited to the number of guests specified in the booking.',
+    is_mandatory: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'template-5',
+    title: 'No Parties',
+    description: 'Parties and events are not permitted. Quiet hours are from 10:00 PM to 7:00 AM.',
+    is_mandatory: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'template-6',
+    title: 'Pet Policy',
+    description: 'Pets are allowed with prior approval. Additional pet fee may apply.',
+    is_mandatory: false,
+    created_at: new Date().toISOString()
+  }
 ]
 
-const categoryLabels = {
-  checkin: 'Check-in/out',
-  safety: 'Safety',
-  guest: 'Guest Rules',
-  facility: 'Facilities',
-  pet: 'Pets',
-  payment: 'Payment',
-  other: 'Other'
-}
-
-const categoryIcons = {
-  checkin: '⏰',
-  safety: '⚠️',
-  guest: '👥',
-  facility: '🏠',
-  pet: '🐾',
-  payment: '💰',
-  other: '📝',
-}
-
 // Computed
-const mandatoryCount = computed(() => activeRules.value.filter(r => r.mandatory).length)
-const requiredCount = computed(() => parsedRules.value.filter(r => r.mandatory).length)
+const mandatoryCount = computed(() => activeRules.value.filter(r => r.is_mandatory).length)
 const hasUnsavedChanges = computed(() => unsavedChanges.value)
 
 // Watchers
-watch(generalNotes, () => {
-  markUnsaved()
-  emit('update:modelValue', generalNotes.value)
-})
-
 watch(activeRules, () => {
   markUnsaved()
   emit('update:rules', activeRules.value)
@@ -413,14 +429,10 @@ watch(activeRules, () => {
 function formatDate(dateString: string) {
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   } catch {
     return 'Today'
   }
-}
-
-function getCategoryIcon(category: string) {
-  return categoryIcons[category as keyof typeof categoryIcons] || '📝'
 }
 
 function markUnsaved() {
@@ -428,219 +440,168 @@ function markUnsaved() {
   emit('change', true)
 }
 
-// Bulk editing functions
-function parseBulkInput() {
-  const lines = bulkInput.value.split('\n')
-  const rules: PropertyRule[] = []
-  let currentRule: Partial<PropertyRule> = {}
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    
-    if (trimmed.startsWith('## ')) {
-      // Save previous rule if exists
-      if (currentRule.title && currentRule.content) {
-        rules.push(createRuleFromParsed(currentRule))
-      }
-      
-      // Parse new rule header
-      const header = trimmed.substring(3).trim()
-      currentRule = parseRuleHeader(header)
-    } else if (trimmed && currentRule.title) {
-      // Add to current rule content
-      currentRule.content = currentRule.content ? currentRule.content + ' ' + trimmed : trimmed
-    } else if (!trimmed && currentRule.title && currentRule.content) {
-      // Blank line - finish current rule
-      rules.push(createRuleFromParsed(currentRule))
-      currentRule = {}
-    }
-  }
-
-  // Add last rule if exists
-  if (currentRule.title && currentRule.content) {
-    rules.push(createRuleFromParsed(currentRule))
-  }
-
-  parsedRules.value = rules
-}
-
-function parseRuleHeader(header: string): Partial<PropertyRule> {
-  const rule: Partial<PropertyRule> = {
-    title: header,
-    mandatory: true,
-    category: 'other',
-    content: ''
-  }
-
-  // Check for [Required] or [Optional]
-  const requiredMatch = header.match(/\[(Required|Optional)\]/i)
-  if (requiredMatch) {
-    rule.mandatory = requiredMatch[1].toLowerCase() === 'required'
-    rule.title = rule.title.replace(requiredMatch[0], '').trim()
-  }
-
-  // Check for category
-  const categoryMatch = header.match(/\(Category:\s*([^)]+)\)/i)
-  if (categoryMatch) {
-    const categoryText = categoryMatch[1].trim().toLowerCase()
-    rule.title = rule.title.replace(categoryMatch[0], '').trim()
-    
-    // Find matching category
-    for (const option of categoryOptions) {
-      if (categoryText.includes(option.label.toLowerCase()) || 
-          option.value.toLowerCase() === categoryText) {
-        rule.category = option.value
-        break
-      }
-    }
-  }
-
-  return rule
-}
-
-function createRuleFromParsed(parsed: Partial<PropertyRule>): PropertyRule {
-  const now = new Date().toISOString()
-  return {
+function addNewRule() {
+  const newRule: PropertyRule = {
     id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    title: parsed.title || 'Untitled Rule',
-    content: parsed.content || '',
-    category: parsed.category || 'other',
-    mandatory: parsed.mandatory ?? true,
-    createdAt: now,
-    updatedAt: now
-  }
-}
-
-function applyBulkRules() {
-  if (parsedRules.value.length === 0) return
-  
-  // Add parsed rules to active rules
-  for (const rule of parsedRules.value) {
-    // Check if similar rule already exists
-    const existingIndex = activeRules.value.findIndex(r => 
-      r.title.toLowerCase() === rule.title.toLowerCase()
-    )
-    
-    if (existingIndex >= 0) {
-      // Update existing rule
-      activeRules.value[existingIndex] = {
-        ...activeRules.value[existingIndex],
-        ...rule,
-        updatedAt: new Date().toISOString()
-      }
-    } else {
-      // Add new rule
-      activeRules.value.push(rule)
-    }
+    title: null,
+    description: null,
+    is_mandatory: true,
+    created_at: new Date().toISOString()
   }
   
-  // Clear bulk input
-  bulkInput.value = ''
-  parsedRules.value = []
-  activeTab.value = 'preview'
+  activeRules.value.push(newRule)
+  editingRuleId.value = newRule.id
   markUnsaved()
 }
 
-function insertSample() {
-  bulkInput.value = `## No Smoking [Required] (Category: Safety)
-This is a strictly non-smoking property. Smoking is prohibited in all areas including balconies.
-
-## Check-in Time [Required] (Category: Check-in/out)
-Check-in is available after 3:00 PM. Early check-in may be available upon request for an additional fee.
-
-## Check-out Time [Required] (Category: Check-in/out)
-Check-out is required by 11:00 AM. Late check-out may be arranged with prior approval.
-
-## Maximum Guests [Required] (Category: Guest Rules)
-Maximum occupancy is 6 guests. Additional visitors must be approved in advance.
-
-## No Parties [Required] (Category: Safety)
-Parties and events are not permitted. Quiet hours are from 10:00 PM to 7:00 AM.
-
-## Pet Policy [Optional] (Category: Pets)
-Pets are allowed with approval. Additional pet fee applies. Pets must be crated when alone.
-
-## Parking [Optional] (Category: Facilities)
-Two parking spaces are available in the driveway. Street parking is prohibited overnight.
-
-## Damage Policy [Required] (Category: Payment)
-Guests are responsible for any damage beyond normal wear and tear.`
-
-  parseBulkInput()
+function toggleEdit(ruleId: string) {
+  if (editingRuleId.value === ruleId) {
+    // Save changes
+    editingRuleId.value = null
+  } else {
+    // Start editing
+    editingRuleId.value = ruleId
+  }
 }
 
-function clearBulkInput() {
-  bulkInput.value = ''
-  parsedRules.value = []
-}
-
-function exportRules() {
-  const text = activeRules.value.map(rule => {
-    const category = categoryOptions.find(c => c.value === rule.category)?.label || rule.category
-    const type = rule.mandatory ? 'Required' : 'Optional'
-    return `## ${rule.title} [${type}] (Category: ${category})\n${rule.content}\n`
-  }).join('\n')
-
-  navigator.clipboard.writeText(text).then(() => {
-    alert('Rules copied to clipboard!')
-  })
-}
-
-// Rule management
-function editRule(rule: PropertyRule) {
-  // Create bulk input for editing
-  const category = categoryOptions.find(c => c.value === rule.category)?.label || rule.category
-  const type = rule.mandatory ? 'Required' : 'Optional'
-  bulkInput.value = `## ${rule.title} [${type}] (Category: ${category})\n${rule.content}\n\n`
-  activeTab.value = 'bulk'
-  parseBulkInput()
-  
-  // Remove the rule being edited
-  const index = activeRules.value.findIndex(r => r.id === rule.id)
-  if (index >= 0) {
-    activeRules.value.splice(index, 1)
+function toggleMandatory(ruleId: string) {
+  const rule = activeRules.value.find(r => r.id === ruleId)
+  if (rule) {
+    rule.is_mandatory = !rule.is_mandatory
+    rule.updated_at = new Date().toISOString()
+    markUnsaved()
   }
 }
 
 function updateRuleContent(ruleId: string, content: string) {
   const rule = activeRules.value.find(r => r.id === ruleId)
   if (rule) {
-    rule.content = content
-    rule.updatedAt = new Date().toISOString()
+    rule.description = content
+    rule.updated_at = new Date().toISOString()
     markUnsaved()
   }
 }
 
-function confirmDelete(ruleId: string) {
-  ruleToDelete.value = ruleId
-  showDeleteConfirm.value = true
-}
-
-function cancelDelete() {
-  showDeleteConfirm.value = false
-  ruleToDelete.value = null
-}
-
-function deleteRule() {
-  if (ruleToDelete.value) {
-    const index = activeRules.value.findIndex(r => r.id === ruleToDelete.value)
+function removeRule(ruleId: string) {
+  if (confirm('Delete this rule?')) {
+    const index = activeRules.value.findIndex(r => r.id === ruleId)
     if (index !== -1) {
       activeRules.value.splice(index, 1)
+      if (editingRuleId.value === ruleId) {
+        editingRuleId.value = null
+      }
       markUnsaved()
     }
   }
-  cancelDelete()
+}
+
+function applyTemplate(template: PropertyRule) {
+  const newRule: PropertyRule = {
+    id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    title: template.title,
+    description: template.description,
+    is_mandatory: template.is_mandatory,
+    created_at: new Date().toISOString()
+  }
+  
+  activeRules.value.push(newRule)
+  editingRuleId.value = newRule.id
+  markUnsaved()
+}
+
+function exportRules() {
+  const rulesText = activeRules.value.map((rule, index) => {
+    const type = rule.is_mandatory ? '[Required]' : '[Optional]'
+    return `${index + 1}. ${rule.title || 'Untitled Rule'} ${type}\n   ${rule.description || 'No description'}\n`
+  }).join('\n')
+  
+  navigator.clipboard.writeText(rulesText).then(() => {
+    alert(`${activeRules.value.length} rules copied to clipboard!`)
+  })
+}
+
+function importRules() {
+  showImportModal.value = true
+  importText.value = ''
+}
+
+function processImport() {
+  const lines = importText.value.split('\n').filter(line => line.trim())
+  
+  lines.forEach(line => {
+    // Parse line like "1. No smoking [Required]"
+    const match = line.match(/(\d+\.\s*)?(.+?)(?:\s+\[(Required|Optional)\])?$/i)
+    
+    if (match) {
+      const [, , title, type] = match
+      const description = '' // No description in simple import
+      
+      const newRule: PropertyRule = {
+        id: `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: title?.trim() || null,
+        description: description,
+        is_mandatory: type?.toLowerCase() !== 'optional',
+        created_at: new Date().toISOString()
+      }
+      
+      activeRules.value.push(newRule)
+    }
+  })
+  
+  showImportModal.value = false
+  markUnsaved()
 }
 
 function discardChanges() {
   if (confirm('Discard all unsaved changes?')) {
     unsavedChanges.value = false
-    // Reset to original data if needed
+    editingRuleId.value = null
+    // Could reset to original state here
   }
 }
 
 function saveRules() {
   unsavedChanges.value = false
+  editingRuleId.value = null
   emit('save')
 }
 </script>
+
+<style scoped>
+.rule-item {
+  transition: all 0.2s ease;
+}
+
+.rule-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rule-number {
+  position: relative;
+}
+
+.rule-number::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  transform: translate(-50%, -50%) scale(1.2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.rule-number:hover::before {
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rule-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+</style>

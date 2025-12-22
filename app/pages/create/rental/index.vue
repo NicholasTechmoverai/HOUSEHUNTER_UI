@@ -33,8 +33,11 @@ const updateAmenities = (payload: []) => {
 </script>
 
 <template>
+    <PropertyHeaderUpload />
     <FileUploader @change="updateFiles" />
-
+    <LocationUploader/>
+    <AmenitiesUpload />
+    <PriceUploader />
     <RulesUploader v-model="rulesContent" :rules="propertyRules" mode="advanced" @save="savePropertyRules"
         @update:rules="handleRulesUpdate" @change="hasUnsavedChanges = $event" />
 

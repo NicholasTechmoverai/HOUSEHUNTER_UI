@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 export const usePropertyStore = defineStore('property', {
   state: () => ({
+    ongoingCreate: [] as any[],
     apartments: [] as any[],
     rentals: [] as any[],
     swaps: [] as any[],
