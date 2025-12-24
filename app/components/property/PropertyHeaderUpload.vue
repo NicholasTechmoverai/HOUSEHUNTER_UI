@@ -1,11 +1,11 @@
 <template>
   <div class="p-2 md:p-6 max-w-5xl mx-auto">
-    <UCard :ui="{ 
+    <UCard :ui="{
       base: 'overflow-hidden border-none sm:border border-gray-200 dark:border-gray-800',
       body: { padding: 'p-4 md:p-6' },
       header: { padding: 'px-4 py-3' }
     }">
-      
+
       <template #header>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -19,7 +19,7 @@
       </template>
 
       <div class="space-y-6">
-        
+
         <!-- Property Title -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -31,13 +31,8 @@
               "{{ propertyData.title }}"
             </span>
           </div>
-          <UInput 
-            v-model="propertyData.title" 
-            placeholder="e.g., Modern Downtown Apartment"
-            icon="i-heroicons-pencil-square"
-            size="lg"
-            class="w-full"
-          />
+          <UInput v-model="propertyData.title" placeholder="e.g., Modern Downtown Apartment"
+            icon="i-heroicons-pencil-square" size="lg" class="w-full" />
         </div>
 
         <!-- Category & Year Built -->
@@ -50,12 +45,7 @@
               <span class="text-xs text-gray-500">Select property type</span>
               <span class="text-[10px] uppercase text-gray-400">{{ propertyData.category || 'Not set' }}</span>
             </div>
-            <USelectMenu
-              v-model="propertyData.category"
-              :items="categories"
-              placeholder="Select Type"
-              size="lg"
-            />
+            <USelectMenu v-model="propertyData.category" :items="categories" placeholder="Select Type" size="lg" />
           </div>
 
           <div class="space-y-2">
@@ -64,7 +54,8 @@
             </label>
             <div class="flex justify-between items-center mb-1">
               <span class="text-xs text-gray-500">Construction year</span>
-              <span v-if="propertyData.year_built" class="text-[10px] text-primary-500">{{ propertyData.year_built }}</span>
+              <span v-if="propertyData.year_built" class="text-[10px] text-primary-500">{{ propertyData.year_built
+              }}</span>
             </div>
             <UInput v-model="propertyData.year_built" type="number" placeholder="2024" size="lg" />
           </div>
@@ -79,13 +70,8 @@
             <span class="text-xs text-gray-500">Describe features and amenities</span>
             <span class="text-[10px] text-gray-400">{{ propertyData.description?.length || 0 }} chars</span>
           </div>
-          <UTextarea 
-            v-model="propertyData.description" 
-            autoresize 
-            :rows="4" 
-            placeholder="Describe features, amenities, and local highlights..." 
-            class="w-full"
-          />
+          <UTextarea v-model="propertyData.description" autoresize :rows="4"
+            placeholder="Describe features, amenities, and local highlights..." class="w-full" />
         </div>
 
         <!-- Specifications Grid -->
@@ -99,13 +85,8 @@
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
                 Lot Size (sq ft)
               </label>
-              <UInput 
-                v-model="propertyData.lot_size" 
-                type="number" 
-                placeholder="0" 
-                variant="none" 
-                class="bg-white dark:bg-gray-800 rounded-md w-full"
-              />
+              <UInput v-model="propertyData.lot_size" type="number" placeholder="0" variant="none"
+                class="bg-white dark:bg-gray-800 rounded-md w-full" />
             </div>
 
             <!-- Floor Level -->
@@ -113,13 +94,8 @@
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
                 Floor Level
               </label>
-              <UInput 
-                v-model="propertyData.floor_number" 
-                type="number" 
-                placeholder="0" 
-                variant="none" 
-                class="bg-white dark:bg-gray-800 rounded-md w-full"
-              />
+              <UInput v-model="propertyData.floor_number" type="number" placeholder="0" variant="none"
+                class="bg-white dark:bg-gray-800 rounded-md w-full" />
             </div>
 
             <!-- Theme Color -->
@@ -128,11 +104,8 @@
                 Theme Color
               </label>
               <div class="flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-md w-full">
-                <input 
-                  v-model="propertyData.theme_color" 
-                  type="color" 
-                  class="w-6 h-6 rounded cursor-pointer border-none bg-transparent flex-shrink-0"
-                />
+                <input v-model="propertyData.theme_color" type="color"
+                  class="w-6 h-6 rounded cursor-pointer border-none bg-transparent flex-shrink-0" />
                 <span class="text-xs font-mono text-gray-700 dark:text-gray-300 truncate">
                   {{ propertyData.theme_color }}
                 </span>
@@ -147,15 +120,10 @@
             Profile Image
           </label>
           <div class="flex items-center gap-4">
-            <div 
+            <div
               class="flex-1 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4 flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-all"
-              @click="$refs.profileUpload.click()"
-            >
-              <UAvatar 
-                v-if="propertyData.profile_picture" 
-                :src="propertyData.profile_picture" 
-                size="md" 
-              />
+              @click="$refs.profileUpload.click()">
+              <UAvatar v-if="propertyData.profile_picture" :src="propertyData.profile_picture" size="md" />
               <UIcon v-else name="i-heroicons-photo" class="w-6 h-6 text-gray-400" />
               <span class="text-sm text-gray-600 dark:text-gray-400">
                 {{ propertyData.profile_picture ? 'Change Photo' : 'Upload Property Photo' }}
@@ -168,25 +136,13 @@
 
       <!-- Footer Actions -->
       <template #footer>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <UButton
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-trash"
-            @click="resetForm"
-            class="w-full sm:w-auto"
-          >
+        <div
+          class="flex flex-col sm:flex-row gap-3 sticky bottom-0 left-0 right-0 backdrop-blur-2xl bg-white/50 dark:bg-gray-900/50  border-t border-gray-200 dark:border-gray-800 p-4 shadow-lg">
+          <UButton color="gray" variant="soft" icon="i-heroicons-trash" @click="resetForm" class="w-full sm:w-auto">
             Clear All
           </UButton>
-          <UButton
-            color="primary"
-            block
-            class="flex-1"
-            :loading="isSubmitting"
-            :disabled="!isFormValid"
-            icon="i-heroicons-check-circle"
-            @click="submitProperty"
-          >
+          <UButton color="primary" block class="flex-1" :loading="isSubmitting" :disabled="!isFormValid"
+            icon="i-heroicons-check-circle" @click="submitProperty">
             Save Property Details
           </UButton>
         </div>
@@ -197,6 +153,15 @@
 
 
 <script setup lang="ts">
+const props = defineProps<{
+  modelValue: any
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: any): void
+}>()
+
+
 interface PropertyData {
   title: string
   category: string
@@ -224,6 +189,8 @@ const categories = [
   "rental"
 ]
 
+
+
 const suggestedColors = [
   '#3B82F6', // Blue
   '#10B981', // Emerald
@@ -242,9 +209,9 @@ const showPreview = ref(false)
 const isSubmitting = ref(false)
 
 const isFormValid = computed(() => {
-  return propertyData.value.title.trim() !== '' && 
-         propertyData.value.description.trim() !== '' && 
-         propertyData.value.category !== ''
+  return propertyData.value.title.trim() !== '' &&
+    propertyData.value.description.trim() !== '' &&
+    propertyData.value.category !== ''
 })
 
 const handleProfileUpload = (event: Event) => {
@@ -260,7 +227,7 @@ const handleProfileUpload = (event: Event) => {
       })
       return
     }
-    
+
     const reader = new FileReader()
     reader.onload = (e) => {
       propertyData.value.profile_picture = e.target?.result as string
@@ -284,7 +251,7 @@ const submitProperty = async () => {
   if (!isFormValid.value) return
 
   isSubmitting.value = true
-  
+
   try {
     // Prepare data
     const dataToSubmit = {
@@ -294,12 +261,11 @@ const submitProperty = async () => {
       lot_size: propertyData.value.lot_size || undefined,
       floor_number: propertyData.value.floor_number || undefined
     }
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
+    emit('update:modelValue', dataToSubmit)
+
     console.log('Property saved:', dataToSubmit)
-    
+
     useToast().add({
       title: 'Success!',
       description: 'Property details saved successfully.',
@@ -307,10 +273,10 @@ const submitProperty = async () => {
       color: 'green',
       timeout: 3000
     })
-    
+
     // Reset form
     resetForm()
-    
+
   } catch (error) {
     useToast().add({
       title: 'Error',

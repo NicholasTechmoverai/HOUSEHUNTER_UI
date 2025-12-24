@@ -1,5 +1,5 @@
 <template>
-  <UCard class="max-w-6xl mx-auto m-2" :ui="{ body: { padding: 'p-0' } }">
+  <UCard class="max-w-6xl mx-auto m-2 " :ui="{ body: { padding: 'p-0' } }">
     <div class="sticky top-0 z-20 bg-white dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-800 rounded-t-lg">
       <div class="flex items-center justify-between">
         <div>
@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <div class="p-2 space-y-6">
+    <div class="p-2 space-y-6 relative">
       <!-- <div class="0 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
         <span class="text-xs font-bold text-gray-400 uppercase mb-2 block">Quick Navigation</span>
         <UTree 
@@ -129,7 +129,7 @@
         </div>
       </div>
 
-      <div id="section-summary" class="pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div id="section-summary" class="sticky bottom-0 left-0 right-0 backdrop-blur-2xl bg-white/50 dark:bg-gray-900/50  border-t border-gray-200 dark:border-gray-800 p-4 shadow-lg">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
           <div class="flex flex-wrap gap-3">
             <div v-for="item in summaryItems" :key="item.label" class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -155,8 +155,15 @@ import { v4 as uuidv4 } from 'uuid'
 
 const route = useRoute()
 const router = useRouter()
-const emit = defineEmits(['save'])
 const toast = useToast()
+
+const props = defineProps<{
+  modelValue: any
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: any): void
+}>()
 
 const isSaving = ref(false)
 const showValidation = ref(false)
@@ -259,7 +266,7 @@ const resetForm = () => Object.assign(priceForm, { amount: '', extraFees: [] })
 const savePricing = async () => {
   isSaving.value = true
   await new Promise(r => setTimeout(r, 800))
-  emit('save', { ...priceForm })
+  emit('update:modelValue', { ...priceForm })
   toast.add({ title: 'Saved successfully', color: 'green' })
   isSaving.value = false
 }

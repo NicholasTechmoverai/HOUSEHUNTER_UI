@@ -5,9 +5,13 @@ const toast = useToast()
 
 const viewLayout = ref<'grid' | 'list'>('grid')
 const files = ref<File[]>([])
+const isSaving = ref<boolean>(false)
+// const props = defineProps<{
+//     modelValue: any
+// }>()
 
 const emit = defineEmits<{
-    (e: 'change', files: File[]): void
+    (e: 'update:modelValue', files: File[]): void
 }>()
 
 const MAX_IMAGE_SIZE_MB = 50
@@ -70,10 +74,23 @@ watch(
             files.value = validated
         }
 
-        emit('change', validated)
+        // emit('update:modelValue', validated)
     },
     { deep: true }
 )
+
+
+const handleSave = async () => {
+    isSaving.value = true
+    const validated = validateFiles(files.value)
+
+    if (validated.length !== files.value.length) {
+        files.value = validated
+    }
+
+    emit('update:modelValue', validated)
+    isSaving.value = false
+}
 
 const items = computed(() => [
     {
@@ -83,7 +100,7 @@ const items = computed(() => [
             {
                 label: 'Grid view',
                 icon: 'i-lucide-grid',
-                  type: 'checkbox' as const,
+                type: 'checkbox' as const,
                 checked: viewLayout.value === 'grid',
                 onUpdateChecked(checked: boolean) {
                     viewLayout.value = 'grid'
@@ -92,7 +109,7 @@ const items = computed(() => [
             {
                 label: 'List view',
                 icon: 'i-lucide-list',
-                  type: 'checkbox' as const,
+                type: 'checkbox' as const,
                 checked: viewLayout.value === 'list',
                 onUpdateChecked(checked: boolean) {
                     viewLayout.value = 'list'
@@ -100,19 +117,24 @@ const items = computed(() => [
             }
         ]
     }
-]satisfies DropdownMenuItem[])
+] satisfies DropdownMenuItem[])
 
 </script>
 
 <template>
     <div class="space-y-4 flex flex-col m-2 border border-gray-200 dark:border-gray-800 p-2 rounded-md items-center">
-        <UFieldGroup>
-            <UButton label="Upload settings" icon="i-lucide-settings" color="neutral" variant="subtle" />
+        <div class="flex flex-row justify-around gap-2">
+            <UFieldGroup>
+                <UButton label="Upload settings" icon="i-lucide-settings" color="neutral" variant="subtle" />
+                <UDropdownMenu :items="items">
+                    <UButton icon="i-lucide-chevron-down" color="neutral" variant="outline" />
+                </UDropdownMenu>
+            </UFieldGroup>
+            <UButton color="primary" size="sm" :loading="isSaving" icon="i-heroicons-check-circle" @click="handleSave">
+                Save
+            </UButton>
+        </div>
 
-            <UDropdownMenu :items="items">
-                <UButton icon="i-lucide-chevron-down" color="neutral" variant="outline" />
-            </UDropdownMenu>
-        </UFieldGroup>
 
         <UFileUpload v-model="files" :layout="viewLayout" multiple :interactive="false" icon="i-lucide-image"
             label="Property media" description="Images up to 50MB and videos (no size limit)"

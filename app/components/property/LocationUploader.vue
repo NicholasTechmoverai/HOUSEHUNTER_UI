@@ -146,6 +146,13 @@ const selectedCoordinates = reactive({
   lat: 0,
   long: 0
 })
+const props = defineProps<{
+  modelValue: any
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: any): void
+}>()
 
 const locationHistory = ref<Array<{ lat: number; long: number }>>([])
 
@@ -181,8 +188,8 @@ const saveLocation = () => {
     coordinates: { ...selectedCoordinates }
   }
   console.log('Saving location data:', finalData)
-  
-  // Add your API call or store update here
+    emit('update:modelValue', { ...finalData })
+
 }
 
 const resetForm = () => {
