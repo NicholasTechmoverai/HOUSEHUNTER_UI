@@ -1,25 +1,17 @@
-<script setup lang="ts">
-import type { BreadcrumbItem } from '@nuxt/ui'
-
-const items = ref<BreadcrumbItem[]>([
-  {
-    label: 'Docs',
-    icon: 'i-lucide-book-open',
-    to: '/docs'
-  },
-  {
-    label: 'Components',
-    icon: 'i-lucide-box',
-    to: '/docs/components'
-  },
-  {
-    label: 'Breadcrumb',
-    icon: 'i-lucide-link',
-    to: '/docs/components/breadcrumb'
-  }
-])
+<script setup>
+const breadcrumbs = useBreadcrumbs()
 </script>
 
 <template>
-  <UBreadcrumb :items="items" />
+    <UBreadcrumb :items="breadcrumbs">
+      <template #separator>
+      <span class="mx-0 text-muted">/</span>
+    </template>
+
+    <template #dropdown="{ item }">
+      <UDropdownMenu :items="item.children">
+        <UButton v-if="item.icon" :icon="item.icon" color="neutral" variant="link" class="p-0.5" />
+      </UDropdownMenu>
+    </template>
+  </UBreadcrumb>
 </template>

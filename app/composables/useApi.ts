@@ -1,4 +1,3 @@
-// composables/useApi.ts
 import { useAppConfig } from '#imports'
 import type { ApiOptions, ApiResponse, ApiError } from '~/types/api'
 
@@ -9,30 +8,61 @@ export const useApi = () => {
   const nuxtApp = useNuxtApp()
   const toast = useToast()
   const loading = ref(false)
+  const userStore = useUserStore()
 
-  // Request interceptor
-  const beforeRequest = (options: ApiOptions): ApiOptions => {
-    // Add auth token if available
-    const token = useCookie('auth_token')
-    if (token.value && !options.headers?.['Authorization']) {
-      options.headers = {
-        ...options.headers,
-        'Authorization': `Bearer ${token.value}`
+const createAuthHeaders = (headers: Record<string, string> = {}): Record<string, string> => {
+    const token = userStore.token
+    
+    if (!token) {
+        throw new Error('No authentication token available')
+    }
+    
+    const authHeaders: Record<string, string> = {
+        'Authorization': `Bearer ${token}`
+    }
+    
+    const hasContentType = headers['Content-Type'] || headers['content-type']
+    
+    if (hasContentType) {
+        const contentTypeKey = headers['Content-Type'] ? 'Content-Type' : 'content-type'
+        authHeaders[contentTypeKey] = headers[contentTypeKey]
+    } else {
+        authHeaders['Content-Type'] = 'application/json'
+    }
+    
+    return authHeaders
+}
+
+  const prepareHeaders = (options: ApiOptions, authenticate: boolean = false): Record<string, string> => {
+    const headers: Record<string, string> = { ...options.headers }
+    
+    if (authenticate) {
+      try {
+        const authHeaders = createAuthHeaders(headers)
+        Object.assign(headers, authHeaders)
+      } catch (error) {
+        console.warn('Authentication warning:', error.message)
+      }
+    } else {
+      const token = useCookie('auth_token')
+      if (token.value && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token.value}`
       }
     }
     
-    // Set default content-type if not multipart/form-data
-    if (!options.headers?.['Content-Type'] && !options.headers?.['content-type']) {
-      options.headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
+    const isFormData = options.body instanceof FormData
+    const hasContentType = headers['Content-Type'] || headers['content-type']
+    
+    if (isFormData) {
+      delete headers['Content-Type']
+      delete headers['content-type']
+    } else if (!hasContentType) {
+      headers['Content-Type'] = 'application/json'
     }
     
-    return options
+    return headers
   }
 
-  // Response interceptor
   const handleResponse = async <T>(
     response: Response,
     options: ApiOptions
@@ -65,14 +95,12 @@ export const useApi = () => {
     }
   }
 
-  // Error handler
   const handleError = (error: any, endpoint: string): never => {
     const apiError: ApiError = new Error(error.message || 'Network error')
     apiError.status = error.status || 500
     apiError.code = error.code
     apiError.response = error.data
     
-    // Show toast notification for user-facing errors
     if (error.status >= 400) {
       const message = error.data?.message || 
                      error.data?.detail || 
@@ -86,25 +114,23 @@ export const useApi = () => {
       })
     }
     
-    // Log error for debugging
     console.error(`API Error [${endpoint}]:`, error)
     
     throw apiError
   }
 
-  // Core request function
   const request = async <T = any>(
     method: string,
     endpoint: string,
     body?: any,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    const finalOptions = beforeRequest(options)
+    const headers = prepareHeaders({ ...options, body }, authenticate)
     const url = new URL(`${apiBase}${endpoint}`)
     
-    // Add query params
-    if (finalOptions.params) {
-      Object.entries(finalOptions.params).forEach(([key, value]) => {
+    if (options.params) {
+      Object.entries(options.params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           url.searchParams.append(key, String(value))
         }
@@ -117,18 +143,8 @@ export const useApi = () => {
       const response = await $fetch(url.toString(), {
         method,
         body,
-        headers: finalOptions.headers,
-        timeout: finalOptions.timeout,
-        onRequest({ options }) {
-          // Upload progress
-          if (finalOptions.onUploadProgress && options.body instanceof FormData) {
-            // You'd need XMLHttpRequest for actual progress tracking
-            // This is a simplified version
-          }
-        },
-        onResponse({ response }) {
-          // Download progress would go here
-        }
+        headers,
+        timeout: options.timeout
       })
       
       return response as T
@@ -140,7 +156,6 @@ export const useApi = () => {
     }
   }
 
-  // Retry wrapper
   const withRetry = async <T>(
     fn: () => Promise<T>,
     options?: ApiOptions['retry']
@@ -164,13 +179,13 @@ export const useApi = () => {
     throw new Error('Max retries exceeded')
   }
 
-  // HTTP methods
   const get = async <T = any>(
     endpoint: string,
     params?: Record<string, any>,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    return await request<T>('GET', endpoint, undefined, {
+    return await request<T>('GET', endpoint, undefined, authenticate, {
       ...options,
       params: { ...options.params, ...params }
     })
@@ -179,62 +194,59 @@ export const useApi = () => {
   const post = async <T = any>(
     endpoint: string,
     body?: any,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    // Special handling for FormData
-    if (body instanceof FormData) {
-      // Don't set Content-Type for FormData - browser will set it with boundary
-      delete options.headers?.['Content-Type']
-      delete options.headers?.['content-type']
-    }
-    
-    return await request<T>('POST', endpoint, body, options)
+    return await request<T>('POST', endpoint, body, authenticate, options)
   }
 
   const put = async <T = any>(
     endpoint: string,
     body?: any,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    return await request<T>('PUT', endpoint, body, options)
+    return await request<T>('PUT', endpoint, body, authenticate, options)
   }
 
   const patch = async <T = any>(
     endpoint: string,
     body?: any,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    return await request<T>('PATCH', endpoint, body, options)
+    return await request<T>('PATCH', endpoint, body, authenticate, options)
   }
 
   const del = async <T = any>(
     endpoint: string,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    return await request<T>('DELETE', endpoint, undefined, options)
+    return await request<T>('DELETE', endpoint, undefined, authenticate, options)
   }
 
-  // Upload with progress
   const upload = async <T = any>(
     endpoint: string,
     formData: FormData,
     onProgress?: (progress: number) => void,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<T> => {
-    return await post<T>(endpoint, formData, {
+    return await post<T>(endpoint, formData, authenticate, {
       ...options,
       onUploadProgress: onProgress
     })
   }
 
-  // Download file
   const download = async (
     endpoint: string,
     filename: string = 'download',
     params?: Record<string, any>,
+    authenticate: boolean = false,
     options: ApiOptions = {}
   ): Promise<void> => {
-    const response = await get<Blob>(endpoint, params, {
+    const response = await get<Blob>(endpoint, params, authenticate, {
       ...options,
       responseType: 'blob'
     })
@@ -249,8 +261,38 @@ export const useApi = () => {
     document.body.removeChild(a)
   }
 
+  const checkAuth = (): { isAuthenticated: boolean; token?: string } => {
+    const token = userStore.token
+    return {
+      isAuthenticated: !!token,
+      token
+    }
+  }
+
+  const refreshToken = async (): Promise<boolean> => {
+    try {
+      const refreshTokenCookie = useCookie('refresh_token')
+      if (!refreshTokenCookie.value) return false
+      
+      const response = await post<{ access_token: string }>(
+        '/auth/refresh',
+        { refresh_token: refreshTokenCookie.value },
+        false,
+        {}
+      )
+      
+      if (response.access_token) {
+        userStore.setToken(response.access_token)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Token refresh failed:', error)
+      return false
+    }
+  }
+
   return {
-    // Core methods
     get,
     post,
     put,
@@ -258,76 +300,21 @@ export const useApi = () => {
     del,
     upload,
     download,
-    
-    // Utilities
+    checkAuth,
+    refreshToken,
     request,
     withRetry,
-    
-    // State
     loading: readonly(loading),
-    
-    // Interceptors
     setAuthToken: (token: string) => {
+      userStore.setToken(token)
       useCookie('auth_token').value = token
     },
     clearAuthToken: () => {
+      userStore.clearToken()
       useCookie('auth_token').value = null
+      useCookie('refresh_token').value = null
     }
   }
 }
 
-// For TypeScript support
 export type UseApiReturn = ReturnType<typeof useApi>
-
-
-
-// export const useApi = () => {
-//   const { site } = useAppConfig()
-//   const apiBase = `${site.apiBase}/api/v1` || 'http://localhost:8000/api/v1'
-
-//   const request = async (
-//     method: string,
-//     endpoint: string,
-//     body?: any,
-//     options: {
-//       headers?: Record<string, string>
-//       params?: Record<string, any>
-//       timeout?: number
-//     } = {}
-//   ) => {
-//     const url = new URL(`${apiBase}${endpoint}`)
-    
-//     // Add query params
-//     if (options.params) {
-//       Object.entries(options.params).forEach(([key, value]) => {
-//         if (value !== undefined && value !== null) {
-//           url.searchParams.append(key, String(value))
-//         }
-//       })
-//     }
-    
-//     return await $fetch(url.toString(), {
-//       method,
-//       body,
-//       headers: options.headers,
-//       timeout: options.timeout
-//     })
-//   }
-
-//   const get = async (endpoint: string, params?: any, options?: any) =>
-//     await request('GET', endpoint, undefined, { ...options, params })
-
-//   const post = async (endpoint: string, body?: any, options?: any) =>
-//     await request('POST', endpoint, body, options)
-
-//   const put = async (endpoint: string, body?: any, options?: any) =>
-//     await request('PUT', endpoint, body, options)
-
-//   const patch = async (endpoint: string, body?: any, options?: any) =>
-//     await request('PATCH', endpoint, body, options)
-
-//   const del = async (endpoint: string, options?: any) =>
-//     await request('DELETE', endpoint, undefined, options)
-
-//   return { get, post, put, patch, del }
-// }

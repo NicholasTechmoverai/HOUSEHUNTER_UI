@@ -91,14 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-const props = defineProps<{
-  modelValue: any
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: any): void
-}>()
+import { ref, computed } from 'vue'
 
 interface AmenityItem {
   name: string
@@ -109,12 +102,32 @@ interface AmenityItem {
   sort_order: number
 }
 
+const props = defineProps<{
+  modelValue: { data: AmenityItem[] } | null
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: AmenityItem[]): void
+  (e: 'reset'): void
+  (e: 'save'): void
+}>()
+
 const toast = useToast()
 const isSaving = ref(false)
 const isResetModalOpen = ref(false)
 const manualName = ref('')
-const selectedItems = ref<AmenityItem[]>([])
 
+/* -----------------------------
+   Computed v-model bridge
+-------------------------------- */
+const selectedItems = computed<AmenityItem[]>({
+  get: () => props.modelValue?.data ?? [],
+  set: (value) => emit('update:modelValue', value),
+})
+
+/* -----------------------------
+   Amenity Library
+-------------------------------- */
 const amenityLibrary: AmenityItem[] = [
   { name: 'WiFi', slug: 'wifi', icon: 'i-heroicons-wifi', description: '', is_free: true, sort_order: 0 },
   { name: 'Parking', slug: 'parking', icon: 'i-heroicons-truck', description: '', is_free: true, sort_order: 1 },
@@ -126,66 +139,92 @@ const amenityLibrary: AmenityItem[] = [
   { name: 'Workspace', slug: 'workspace', icon: 'i-heroicons-briefcase', description: '', is_free: true, sort_order: 7 },
 ]
 
-const isItemSelected = (slug: string) => selectedItems.value.some(i => i.slug === slug)
+/* -----------------------------
+   Helpers
+-------------------------------- */
+const isItemSelected = (slug: string): boolean =>
+  selectedItems.value.some(item => item.slug === slug)
 
+/* -----------------------------
+   Toggle Selection (FIXED)
+-------------------------------- */
 const toggleSelection = (item: AmenityItem) => {
-  const index = selectedItems.value.findIndex(i => i.slug === item.slug)
-  if (index > -1) {
-    selectedItems.value.splice(index, 1)
+  if (isItemSelected(item.slug)) {
+    selectedItems.value = selectedItems.value.filter(
+      i => i.slug !== item.slug
+    )
   } else {
-    selectedItems.value.push({ ...item, is_free: true })
+    selectedItems.value = [
+      ...selectedItems.value,
+      { ...item, is_free: true },
+    ]
   }
 }
 
+/* -----------------------------
+   Manual Amenity Add
+-------------------------------- */
 const addManualAmenity = () => {
-  if (!manualName.value.trim()) return
-  const slug = manualName.value.toLowerCase().trim().replace(/\s+/g, '-')
+  const name = manualName.value.trim()
+  if (!name) return
+
+  const slug = name.toLowerCase().replace(/\s+/g, '-')
 
   if (isItemSelected(slug)) {
-    toast.add({ title: 'Already exists', color: 'red', icon: 'i-heroicons-exclamation-circle' })
+    toast.add({
+      title: 'Already exists',
+      color: 'red',
+      icon: 'i-heroicons-exclamation-circle',
+    })
     return
   }
 
-  selectedItems.value.push({
-    name: manualName.value,
-    slug: slug,
-    description: '',
-    is_free: true,
-    icon: 'i-heroicons-sparkles',
-    sort_order: selectedItems.value.length
-  })
+  selectedItems.value = [
+    ...selectedItems.value,
+    {
+      name,
+      slug,
+      description: '',
+      is_free: true,
+      icon: 'i-heroicons-sparkles',
+      sort_order: selectedItems.value.length,
+    },
+  ]
 
   manualName.value = ''
   toast.add({ title: 'Amenity added', color: 'green', timeout: 2000 })
 }
 
+/* -----------------------------
+   Reset
+-------------------------------- */
 const confirmReset = () => {
   selectedItems.value = []
   isResetModalOpen.value = false
+  emit('reset')
   toast.add({ title: 'Selections cleared', color: 'gray' })
 }
 
+/* -----------------------------
+   Save
+-------------------------------- */
 const handleSave = async () => {
-  if (selectedItems.value.length === 0) {
+  if (!selectedItems.value.length) {
     toast.add({ title: 'Select at least one amenity', color: 'orange' })
     return
   }
 
   isSaving.value = true
-  // Simulate API Call
   await new Promise(r => setTimeout(r, 1000))
 
-  console.log('DB Payload:', JSON.parse(JSON.stringify(selectedItems.value)))
-
-  emit('update:modelValue', selectedItems.value)
-
-
+  emit('save')
   isSaving.value = false
+
   toast.add({
     title: 'Amenities Saved',
     description: 'Property details updated successfully.',
     color: 'green',
-    icon: 'i-heroicons-check-badge'
+    icon: 'i-heroicons-check-badge',
   })
 }
 </script>

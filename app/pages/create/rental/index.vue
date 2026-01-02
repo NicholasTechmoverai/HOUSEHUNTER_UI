@@ -2,8 +2,8 @@
 import { onBeforeUnmount, watch, ref, computed } from 'vue'
 import type { AccordionItem, DropdownMenuItem } from '@nuxt/ui'
 
-const propertyStore = usePropertyStore()
-const { ongoingCreate } = storeToRefs(propertyStore)
+const rentalStore = useRentalStore()
+const { ongoingCreate } = storeToRefs(rentalStore)
 const toast = useToast()
 
 // State Management
@@ -28,7 +28,7 @@ const showResetConfirm = () => {
 }
 
 const confirmReset = () => {
-  propertyStore.resetOngoingCreate()
+  rentalStore.resetOngoingCreate()
   closeModal()
 }
 
@@ -36,19 +36,19 @@ const proceedAnyway = async () => {
   closeModal()
   isLoading.value = true
   try {
-    await propertyStore.persistOngoingCreate()
+    await rentalStore.persistOngoingCreate()
   } finally {
     isLoading.value = false
   }
 }
 
 const saveAll = async () => {
-  const report = await propertyStore.checkAllRequiredData()
+  const report = await rentalStore.checkAllRequiredData()
 
   if (report.isComplete) {
     isLoading.value = true
     try {
-      const res = await propertyStore.persistOngoingCreate()
+      const res = await rentalStore.persistOngoingCreate()
       if (res.success) {
         toast.add({
           title: "Post created successfull",
@@ -106,7 +106,9 @@ const accordionItems = computed(() => [
     isDone: hasSectionData('headInfo'),
     props: {
       modelValue: ongoingCreate.value.headInfo,
-      'onUpdate:modelValue': (v: any) => (ongoingCreate.value.headInfo = v)
+      'onUpdate:modelValue': (v: any) => rentalStore.setHeadInfo(v),
+      'onReset': () => handleReset('headInfo'),
+      'onSave': () => handleHeadInfoSave()
     }
   },
   {
@@ -116,7 +118,9 @@ const accordionItems = computed(() => [
     isDone: hasSectionData('files'),
     props: {
       modelValue: ongoingCreate.value.files,
-      'onUpdate:modelValue': (v: File[]) => (ongoingCreate.value.files = v)
+      'onUpdate:modelValue': (v: any) => rentalStore.addFiles(v),
+      'onReset': () => handleReset('files'),
+      'onSave': () => handleFilesSave()
     }
   },
   {
@@ -126,7 +130,9 @@ const accordionItems = computed(() => [
     isDone: hasSectionData('location'),
     props: {
       modelValue: ongoingCreate.value.location,
-      'onUpdate:modelValue': (v: any) => (ongoingCreate.value.location = v)
+      'onUpdate:modelValue': (v: any) => rentalStore.setLocation(v),
+      'onReset': () => handleReset('location'),
+      'onSave': () => handleLocationSave()
     }
   },
   {
@@ -136,7 +142,9 @@ const accordionItems = computed(() => [
     isDone: hasSectionData('amenities'),
     props: {
       modelValue: ongoingCreate.value.amenities,
-      'onUpdate:modelValue': (v: any[]) => (ongoingCreate.value.amenities = v)
+      'onUpdate:modelValue': (v: any[]) => rentalStore.setAmenities(v),
+      'onReset': () => handleReset('location'),
+      'onSave': () => handleAmenitiesSave()
     }
   },
   {
@@ -146,7 +154,9 @@ const accordionItems = computed(() => [
     isDone: hasSectionData('price'),
     props: {
       modelValue: ongoingCreate.value.price,
-      'onUpdate:modelValue': (v: any) => (ongoingCreate.value.price = v)
+      'onUpdate:modelValue': (v: any[]) => rentalStore.setPrice(v),
+      'onReset': () => handleReset('price'),
+      'onSave': () => handlePriceSave()
     }
   },
   {
@@ -155,14 +165,49 @@ const accordionItems = computed(() => [
     component: defineAsyncComponent(() => import('~/components/property/RulesUploader.vue')),
     isDone: hasSectionData('rulesContent') || hasSectionData('propertyRules'),
     props: {
-      modelValue: ongoingCreate.value.rulesContent,
-      rules: ongoingCreate.value.propertyRules,
+      modelValue: ongoingCreate.value.rules,
       mode: 'advanced',
-      'onUpdate:modelValue': (v: string) => (ongoingCreate.value.rulesContent = v),
-      'onUpdate:rules': (v: any[]) => (ongoingCreate.value.propertyRules = v)
+      'onUpdate:modelValue': (v: any[]) => rentalStore.setRules(v),
+      'onReset': () => handleReset('rules'),
+      'onSave': () => handleRulesSave()
     }
   }
 ])
+
+const handleReset = (vl) => {
+  console.log("Reseting", vl)
+}
+
+const handleHeadInfoSave = () => {
+  const res = rentalStore.uploadHeadInfo()
+  console.log("Submit Responce", res)
+}
+
+const handleFilesSave = () => {
+  const res = rentalStore.uploadFiles()
+  console.log("Submit Responce", res)
+}
+
+const handleLocationSave = () => {
+  const res = rentalStore.uploadLocation()
+  console.log("Submit Responce", res)
+}
+
+const handleAmenitiesSave = () => {
+  const res = rentalStore.uploadAmenities()
+  console.log("Submit Responce", res)
+}
+
+const handlePriceSave = () => {
+  const res = rentalStore.uploadPrice()
+  console.log("Submit Responce", res)
+}
+
+const handleRulesSave = () => {
+  const res = rentalStore.uploadRules()
+  console.log("Submit Responce", res)
+}
+
 
 const progress = computed(() => {
   const done = accordionItems.value.filter(i => i.isDone).length
@@ -186,101 +231,91 @@ watch(ongoingCreate, () => { ongoingCreate.value.hasUnsavedChanges = true }, { d
 
 onBeforeUnmount(async () => {
   if (ongoingCreate.value.hasUnsavedChanges) {
-    const report = await propertyStore.checkAllRequiredData()
-    if (report.isComplete) await propertyStore.persistOngoingCreate()
+    const report = await rentalStore.checkAllRequiredData()
+    if (report.isComplete) await rentalStore.persistOngoingCreate()
   }
 })
 </script>
 
 <template>
   <div class="mx-auto w-full max-w-5xl px-4 py-8 space-y-6">
-
-
-<div class="relative overflow-hidden border-0  bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 p-5 md:p-8 lg:p-10 mb-8 shadow-2xl ring-1 ring-white/20">
-    <div class="absolute top-0 right-0 -mt-8 -mr-8 opacity-15 transition-transform duration-700 hover:scale-110">
-      <UIcon name="i-heroicons-home-modern" class="h-48 w-48 lg:h-64 lg:w-64 text-white" />
+       <div>
+      <NavigationBreadCrumb />
     </div>
-    
-    <div class="relative z-10">
-      <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-        
-        <div class="space-y-6 max-w-2xl">
-          <div>
-            <h1 class="text-2xl xs:text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
-              Create a Rental & <br class="hidden sm:block" />
-              <span class="text-emerald-200">Join Thousands</span>
-            </h1>
-            <p class="mt-4 text-base md:text-lg lg:text-xl text-emerald-50 font-medium leading-relaxed opacity-90">
-              Reach unlimited users, maximize your earnings, and connect with ideal tenants in our verified marketplace.
-            </p>
+
+    <div
+      class="relative overflow-hidden border-0  bg-linear-to-br from-brand-start/30 via-brand-middle to-brand-end  p-5 md:p-8 lg:p-10 mb-8 shadow-2xl ring-1 ring-white/20">
+      <div class="absolute top-0 right-0 -mt-8 -mr-8 opacity-15 transition-transform duration-700 hover:scale-110">
+        <UIcon name="i-heroicons-home-modern" class="h-48 w-48 lg:h-64 lg:w-64 text-white" />
+      </div>
+
+      <div class="relative z-10">
+        <div class="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+
+          <div class="space-y-6 max-w-2xl">
+            <div>
+              <h1
+                class="text-2xl xs:text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight">
+                Create a Rental & <br class="hidden sm:block" />
+                <span class="text-emerald-200">Join Thousands</span>
+              </h1>
+              <p class="mt-4 text-base md:text-lg lg:text-xl text-emerald-50 font-medium leading-relaxed opacity-90">
+                Reach unlimited users, maximize your earnings, and connect with ideal tenants in our verified
+                marketplace.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+              <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                <UIcon name="i-heroicons-users" class="h-4 w-4 text-emerald-200" />
+                <span class="text-xs md:text-sm text-white font-semibold">10k+ Tenants</span>
+              </div>
+              <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                <UIcon name="i-heroicons-currency-dollar" class="h-4 w-4 text-emerald-200" />
+                <span class="text-xs md:text-sm text-white font-semibold">95% Success</span>
+              </div>
+              <div
+                class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
+                <UIcon name="i-heroicons-shield-check" class="h-4 w-4 text-emerald-200" />
+                <span class="text-xs md:text-sm text-white font-semibold">Verified</span>
+              </div>
+            </div>
           </div>
-          
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-              <UIcon name="i-heroicons-users" class="h-4 w-4 text-emerald-200" />
-              <span class="text-xs md:text-sm text-white font-semibold">10k+ Tenants</span>
-            </div>
-            <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-              <UIcon name="i-heroicons-currency-dollar" class="h-4 w-4 text-emerald-200" />
-              <span class="text-xs md:text-sm text-white font-semibold">95% Success</span>
-            </div>
-            <div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md border border-white/10">
-              <UIcon name="i-heroicons-shield-check" class="h-4 w-4 text-emerald-200" />
-              <span class="text-xs md:text-sm text-white font-semibold">Verified</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex flex-col gap-4 sm:flex-row lg:flex-col lg:items-end">
-          
-          <div class="flex-1 lg:flex-none bg-gray-950/20 backdrop-blur-xl rounded-2xl p-5 border border-white/20 min-w-[260px]">
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-bold uppercase tracking-widest text-emerald-100/80">Listing Progress</p>
-              <span class="text-xl font-black text-white">{{ progress.percent }}%</span>
-            </div>
-            <UProgress 
-              v-model="progress.percent" 
-              color="success" 
-              size="md" 
-              :ui="{ 
+
+          <div class="flex flex-col gap-4 sm:flex-row lg:flex-col lg:items-end">
+
+            <div
+              class="flex-1 lg:flex-none bg-gray-950/20 backdrop-blur-xl rounded-2xl p-5 border border-white/20 min-w-[260px]">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold uppercase tracking-widest text-emerald-100/80">Listing Progress</p>
+                <span class="text-xl font-black text-white">{{ progress.percent }}%</span>
+              </div>
+              <UProgress v-model="progress.percent" color="success" size="md" :ui="{
                 background: 'bg-white/20',
                 progress: { color: 'text-white' }
-              }"
-              class="mb-3 h-2.5"
-            />
-            
-            <div class="flex items-center justify-between text-[11px] md:text-xs text-emerald-50/70 font-medium">
-              <span>{{ progress.completed }} of {{ progress.total }} steps</span>
-              <span v-if="progress.percent === 100" class="flex items-center gap-1">
-                <UIcon name="i-heroicons-check-badge" /> Ready to post
-              </span>
+              }" class="mb-3 h-2.5" />
+
+              <div class="flex items-center justify-between text-[11px] md:text-xs text-emerald-50/70 font-medium">
+                <span>{{ progress.completed }} of {{ progress.total }} steps</span>
+                <span v-if="progress.percent === 100" class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-check-badge" /> Ready to post
+                </span>
+              </div>
             </div>
+
+            <div class="flex items-center justify-end gap-2">
+              <UButton color="white" variant="soft" size="md" icon="i-heroicons-question-mark-circle"
+                class="font-bold rounded-xl" />
+              <UDropdownMenu :items="prefItems">
+                <UButton color="white" variant="white" size="md" icon="i-lucide-settings" label="Settings"
+                  class="font-bold rounded-xl shadow-lg" />
+              </UDropdownMenu>
+            </div>
+
           </div>
-          
-          <div class="flex items-center justify-end gap-2">
-            <UButton 
-              color="white" 
-              variant="soft" 
-              size="md"
-              icon="i-heroicons-question-mark-circle"
-              class="font-bold rounded-xl"
-            />
-            <UDropdownMenu :items="prefItems">
-              <UButton 
-                color="white" 
-                variant="white" 
-                size="md"
-                icon="i-lucide-settings"
-                label="Settings"
-                class="font-bold rounded-xl shadow-lg"
-              />
-            </UDropdownMenu>
-          </div>
-          
         </div>
       </div>
     </div>
-  </div>
 
     <UAccordion v-model="openItems" :items="accordionItems" :type="allowMultiple ? 'multiple' : 'single'"
       variant="soft">

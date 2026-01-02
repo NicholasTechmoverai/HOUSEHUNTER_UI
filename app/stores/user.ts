@@ -5,6 +5,7 @@ export const useUserStore = defineStore('user', {
     user: null as any,
     token: null as string | null,
     loading: false,
+    breadCrumbItems: [],
     error: null as any,
     redirectRoutes: {
       verify_email: '/auth/verify-email',
@@ -25,6 +26,9 @@ export const useUserStore = defineStore('user', {
   },
 
   actions: {
+    updateBreadcrumbItems(item) {
+      this.breadCrumbItems = item
+    },
     setUser(user: any, token?: string) {
       this.user = user
       if (token) this.token = token
@@ -326,6 +330,42 @@ export const useUserStore = defineStore('user', {
       } finally {
         this.loading = false
       }
+    },
+
+    async get_search_history(type:string | null = null){
+      if(!this.user)return
+      const { get } = useApi()
+      const endpoints = useEndpoints()
+
+      try {
+        return await get(endpoints.user.searhHistory(this.user.id), {type},true)
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'getting  history failed'
+        throw error
+      } finally {
+      }
+
+    },
+
+    async get_suggestions(){
+      const { get } = useApi()
+      const endpoints = useEndpoints()
+
+      try {
+        return await get(endpoints.user.searhHistory(this.user.id), {},true)
+      } catch (error: any) {
+        this.error =
+          error.response?.data?.message ||
+          error.message ||
+          'getting  history failed'
+        throw error
+      } finally {
+      }
+
+
     }
   },
 

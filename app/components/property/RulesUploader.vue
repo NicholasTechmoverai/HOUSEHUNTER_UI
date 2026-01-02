@@ -239,7 +239,7 @@
     </div>
 
     <!-- Save Section -->
-    <div v-if="hasUnsavedChanges"
+    <div 
       class="sticky bottom-0 left-0 right-0 backdrop-blur-2xl bg-white/50 dark:bg-gray-900/50  border-t border-gray-200 dark:border-gray-800 p-4 shadow-lg">
       <div class="max-w-4xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -305,9 +305,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
-// Match the Django model structure
 interface PropertyRule {
   id: string
   title: string | null
@@ -317,169 +316,167 @@ interface PropertyRule {
   updated_at?: string
 }
 
+interface ModelValue {
+  data: PropertyRule[]
+  status?: string
+  lastUpdated?: string
+}
+
 const props = defineProps<{
-  rules?: PropertyRule[]
+  modelValue: ModelValue
 }>()
+
+console.log("props model value",props.modelValue)
 
 const emit = defineEmits<{
-  'update:rules': [rules: PropertyRule[]]
-  'save': []
-  'change': [hasChanges: boolean]
+  (e: 'update:modelValue', value: ModelValue): void
+  (e: 'save'): void
+  (e: 'reset'): void
 }>()
 
-// State
-const activeRules = ref<PropertyRule[]>(props.rules || [])
+/* writable proxy to props */
+const activeRules = computed<PropertyRule[]>({
+  get: () => props.modelValue.data ?? [],
+  set: (data) => {
+    console.log('updating data',data)
+    emit('update:modelValue', data)
+  }
+})
+
 const unsavedChanges = ref(false)
 const editingRuleId = ref<string | null>(null)
 const showImportModal = ref(false)
 const importText = ref('')
 
-// Quick templates matching common property rules
 const quickTemplates: PropertyRule[] = [
   {
     id: 'template-1',
     title: 'No Smoking',
-    description: 'This is a strictly non-smoking property. Smoking is prohibited in all areas including balconies.',
+    description: 'Smoking is prohibited in all areas including balconies.',
     is_mandatory: true,
     created_at: new Date().toISOString()
   },
   {
     id: 'template-2',
     title: 'Check-in Time',
-    description: 'Check-in is available after 3:00 PM. Early check-in may be available upon request.',
+    description: 'Check-in is available after 3:00 PM.',
     is_mandatory: true,
     created_at: new Date().toISOString()
   },
   {
     id: 'template-3',
     title: 'Check-out Time',
-    description: 'Check-out is required by 11:00 AM. Late check-out may be arranged with prior approval.',
+    description: 'Check-out is required by 11:00 AM.',
     is_mandatory: true,
     created_at: new Date().toISOString()
   },
   {
     id: 'template-4',
     title: 'Maximum Guests',
-    description: 'Maximum occupancy is limited to the number of guests specified in the booking.',
+    description: 'Maximum occupancy must not be exceeded.',
     is_mandatory: true,
     created_at: new Date().toISOString()
   },
   {
     id: 'template-5',
     title: 'No Parties',
-    description: 'Parties and events are not permitted. Quiet hours are from 10:00 PM to 7:00 AM.',
+    description: 'Parties and events are not permitted.',
     is_mandatory: true,
     created_at: new Date().toISOString()
   },
   {
     id: 'template-6',
     title: 'Pet Policy',
-    description: 'Pets are allowed with prior approval. Additional pet fee may apply.',
+    description: 'Pets allowed with prior approval.',
     is_mandatory: false,
     created_at: new Date().toISOString()
   }
 ]
 
-// Computed
-const mandatoryCount = computed(() => activeRules.value.filter(r => r.is_mandatory).length)
-const hasUnsavedChanges = computed(() => unsavedChanges.value)
+const mandatoryCount = computed(
+  () => activeRules.value?.filter(r => r.is_mandatory).length
+)
 
-// Watchers
-watch(activeRules, () => {
-  markUnsaved()
-  emit('update:rules', activeRules.value)
-}, { deep: true })
+watch(
+  activeRules,
+  () => {
+    unsavedChanges.value = true
+  },
+  { deep: true }
+)
 
-// Functions
-function formatDate(dateString: string) {
+function formatDate(date: string) {
   try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
   } catch {
     return 'Today'
   }
 }
 
-function markUnsaved() {
-  unsavedChanges.value = true
-  emit('change', true)
-}
-
 function addNewRule() {
-  const newRule: PropertyRule = {
-    id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  const rule: PropertyRule = {
+    id: crypto.randomUUID(),
     title: null,
     description: null,
     is_mandatory: true,
     created_at: new Date().toISOString()
   }
 
-  activeRules.value.push(newRule)
-  editingRuleId.value = newRule.id
-  markUnsaved()
+  activeRules.value = [...activeRules.value, rule]
+  editingRuleId.value = rule.id
 }
 
-function toggleEdit(ruleId: string) {
-  if (editingRuleId.value === ruleId) {
-    // Save changes
-    editingRuleId.value = null
-  } else {
-    // Start editing
-    editingRuleId.value = ruleId
-  }
+function toggleEdit(id: string) {
+  editingRuleId.value = editingRuleId.value === id ? null : id
 }
 
-function toggleMandatory(ruleId: string) {
-  const rule = activeRules.value.find(r => r.id === ruleId)
-  if (rule) {
-    rule.is_mandatory = !rule.is_mandatory
-    rule.updated_at = new Date().toISOString()
-    markUnsaved()
-  }
-}
-function updateRuleContent(ruleId: string, content: string) {
-  const rule = activeRules.value.find(r => r.id === ruleId)
-  if (rule) {
-    rule.description = content
-    rule.updated_at = new Date().toISOString()
-    markUnsaved()
-  }
+function toggleMandatory(id: string) {
+  const rule = activeRules.value.find(r => r.id === id)
+  if (!rule) return
+
+  rule.is_mandatory = !rule.is_mandatory
+  rule.updated_at = new Date().toISOString()
 }
 
-function removeRule(ruleId: string) {
-  const index = activeRules.value.findIndex(r => r.id === ruleId)
-  if (index !== -1) {
-    activeRules.value.splice(index, 1)
-    if (editingRuleId.value === ruleId) {
-      editingRuleId.value = null
-    }
-    markUnsaved()
-  }
+function updateRuleContent(id: string, content: string) {
+  const rule = activeRules.value.find(r => r.id === id)
+  if (!rule) return
+
+  rule.description = content
+  rule.updated_at = new Date().toISOString()
+}
+
+function removeRule(id: string) {
+  activeRules.value = activeRules.value.filter(r => r.id !== id)
+  if (editingRuleId.value === id) editingRuleId.value = null
 }
 
 function applyTemplate(template: PropertyRule) {
-  const newRule: PropertyRule = {
-    id: `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    title: template.title,
-    description: template.description,
-    is_mandatory: template.is_mandatory,
-    created_at: new Date().toISOString()
-  }
-
-  activeRules.value.push(newRule)
-  editingRuleId.value = newRule.id
-  markUnsaved()
+  activeRules.value = [
+    ...activeRules.value,
+    {
+      ...template,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString()
+    }
+  ]
 }
 
 function exportRules() {
-  const rulesText = activeRules.value.map((rule, index) => {
-    const type = rule.is_mandatory ? '[Required]' : '[Optional]'
-    return `${index + 1}. ${rule.title || 'Untitled Rule'} ${type}\n   ${rule.description || 'No description'}\n`
-  }).join('\n')
+  const text = activeRules.value
+    .map(
+      (r, i) =>
+        `${i + 1}. ${r.title || 'Untitled'} [${
+          r.is_mandatory ? 'Required' : 'Optional'
+        }]\n${r.description || ''}`
+    )
+    .join('\n\n')
 
-  navigator.clipboard.writeText(rulesText).then(() => {
-    alert(`${activeRules.value.length} rules copied to clipboard!`)
-  })
+  navigator.clipboard.writeText(text)
 }
 
 function importRules() {
@@ -488,35 +485,25 @@ function importRules() {
 }
 
 function processImport() {
-  const lines = importText.value.split('\n').filter(line => line.trim())
+  const rules = importText.value
+    .split('\n')
+    .filter(Boolean)
+    .map(line => ({
+      id: crypto.randomUUID(),
+      title: line.trim(),
+      description: null,
+      is_mandatory: true,
+      created_at: new Date().toISOString()
+    }))
 
-  lines.forEach(line => {
-    // Parse line like "1. No smoking [Required]"
-    const match = line.match(/(\d+\.\s*)?(.+?)(?:\s+\[(Required|Optional)\])?$/i)
-
-    if (match) {
-      const [, , title, type] = match
-      const description = '' // No description in simple import
-
-      const newRule: PropertyRule = {
-        id: `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        title: title?.trim() || null,
-        description: description,
-        is_mandatory: type?.toLowerCase() !== 'optional',
-        created_at: new Date().toISOString()
-      }
-
-      activeRules.value.push(newRule)
-    }
-  })
-
+  activeRules.value = [...activeRules.value, ...rules]
   showImportModal.value = false
-  markUnsaved()
 }
 
 function discardChanges() {
   unsavedChanges.value = false
   editingRuleId.value = null
+  emit('reset')
 }
 
 function saveRules() {
@@ -525,6 +512,7 @@ function saveRules() {
   emit('save')
 }
 </script>
+
 
 <style scoped>
 .rule-item {

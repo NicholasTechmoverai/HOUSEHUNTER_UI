@@ -307,72 +307,72 @@ watch(country, (newCountry) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50/30 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 flex items-center justify-center">
+  <div class="min-h-screen bg-gradient-to-br from-brand-start/5 via-brand-middle/5 to-brand-end/5 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-2 sm:p-4 flex items-center justify-center">
     <!-- Animated background elements -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      <div class="absolute -top-40 -right-40 w-60 sm:w-80 h-60 sm:h-80 bg-brand-start/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div class="absolute -bottom-40 -left-40 w-60 sm:w-80 h-60 sm:h-80 bg-brand-end/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 sm:w-80 h-60 sm:h-80 bg-brand-middle/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
     </div>
 
-    <div class="relative w-full max-w-5xl z-10">
-      <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-indigo-500/10 dark:shadow-black/30 border border-white/40 dark:border-gray-700/50 overflow-hidden">
+    <div class="relative w-full max-w-4xl xl:max-w-5xl z-10 mx-2 sm:mx-4">
+      <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-2xl shadow-brand-start/10 dark:shadow-black/30 border border-white/40 dark:border-gray-700/50 overflow-hidden">
         <!-- Gradient accent line -->
-        <div class="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500" />
+        <div class="h-1.5 w-full bg-gradient-to-r from-brand-start via-brand-middle to-brand-end" />
         
         <div class="grid md:grid-cols-2">
           <!-- Left side - Brand/Info -->
-          <div class="p-8 md:p-10 bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-emerald-500/10 dark:from-gray-700/50 dark:via-gray-700/30 dark:to-gray-700/50 border-r border-gray-100 dark:border-gray-700/50 hidden md:block">
-            <div class="h-full flex flex-col justify-center space-y-8">
+          <div class="p-6 md:p-8 lg:p-10 bg-gradient-to-br from-brand-start/10 via-brand-middle/10 to-brand-end/10 dark:from-gray-700/50 dark:via-gray-700/30 dark:to-gray-700/50 border-r border-gray-100 dark:border-gray-700/50 hidden md:block">
+            <div class="h-full flex flex-col justify-center space-y-6 md:space-y-8">
               <!-- Brand/Logo -->
-              <div class="space-y-4">
+              <div class="space-y-3 md:space-y-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <UIcon name="i-heroicons-home-modern" class="w-6 h-6 text-white" />
+                  <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-brand-start to-brand-middle flex items-center justify-center shadow-lg shadow-brand-start/20">
+                    <UIcon name="i-heroicons-home-modern" class="w-5 h-5 md:w-6 md:h-6 text-white" />
                   </div>
                   <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">HouseHunter</h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Kenya</p>
+                    <h2 class="text-lg md:text-xl font-bold text-gray-900 dark:text-white">HouseHunter</h2>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">Kenya</p>
                   </div>
                 </div>
                 
-                <div class="space-y-3">
-                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Find Your Perfect Home</h3>
-                  <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                <div class="space-y-2 md:space-y-3">
+                  <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Find Your Perfect Home</h3>
+                  <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
                     Join thousands of satisfied users finding their dream properties across Kenya.
                   </p>
                 </div>
               </div>
 
               <!-- Features -->
-              <div class="space-y-4">
+              <div class="space-y-3 md:space-y-4">
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <UIcon name="i-heroicons-check-circle" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <div class="w-7 h-7 md:w-8 md:h-8 bg-brand-start/10 dark:bg-brand-start/20 flex items-center justify-center flex-shrink-0">
+                    <UIcon name="i-heroicons-check-circle" class="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-start dark:text-brand-middle" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Verified Listings</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Only authentic properties</p>
+                    <p class="text-sm md:text-base font-medium text-gray-900 dark:text-white">Verified Listings</p>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">Only authentic properties</p>
                   </div>
                 </div>
                 
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <UIcon name="i-heroicons-shield-check" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <div class="w-7 h-7 md:w-8 md:h-8 bg-brand-middle/10 dark:bg-brand-middle/20 flex items-center justify-center flex-shrink-0">
+                    <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-middle" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Secure Platform</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">Bank-level security</p>
+                    <p class="text-sm md:text-base font-medium text-gray-900 dark:text-white">Secure Platform</p>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">Bank-level security</p>
                   </div>
                 </div>
                 
                 <div class="flex items-start gap-3">
-                  <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <UIcon name="i-heroicons-user-group" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <div class="w-7 h-7 md:w-8 md:h-8 bg-brand-end/10 dark:bg-brand-end/20 flex items-center justify-center flex-shrink-0">
+                    <UIcon name="i-heroicons-user-group" class="w-3.5 h-3.5 md:w-4 md:h-4 text-brand-end" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white">Community Trust</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">10,000+ happy users</p>
+                    <p class="text-sm md:text-base font-medium text-gray-900 dark:text-white">Community Trust</p>
+                    <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">10,000+ happy users</p>
                   </div>
                 </div>
               </div>
@@ -380,23 +380,23 @@ watch(country, (newCountry) => {
           </div>
 
           <!-- Right side - Form -->
-          <div class="p-6 md:p-8 lg:p-10">
+          <div class="p-4 sm:p-6 md:p-8 lg:p-10">
             <!-- Form Header -->
-            <div class="mb-8">
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <div class="mb-6 md:mb-8">
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
                 Create Account
               </h1>
-              <p class="text-gray-600 dark:text-gray-300">
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                 Join HouseHunter Kenya in seconds
               </p>
             </div>
 
             <!-- Registration Form -->
-            <form @submit.prevent="handleSignUp" class="space-y-6">
+            <form @submit.prevent="handleSignUp" class="space-y-4 md:space-y-6">
               <!-- Name & Email -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     Full Name
                     <span class="text-red-500">*</span>
                   </label>
@@ -404,23 +404,22 @@ watch(country, (newCountry) => {
                     v-model="fullName" 
                     :disabled="loading" 
                     placeholder="John Doe" 
-                    size="lg"
+                    size="md"
                     icon="i-heroicons-user"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
-                    class="w-full transition-all duration-200 hover:border-indigo-400 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
+                    class="w-full transition-all duration-200"
                   />
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     Email Address
                     <span class="text-red-500">*</span>
                   </label>
@@ -428,27 +427,26 @@ watch(country, (newCountry) => {
                     v-model="email" 
                     :disabled="loading" 
                     placeholder="john@example.com" 
-                    size="lg"
+                    size="md"
                     type="email"
                     icon="i-heroicons-envelope"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
-                    class="w-full transition-all duration-200 hover:border-indigo-400 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
+                    class="w-full transition-all duration-200"
                   />
                 </div>
               </div>
 
               <!-- Passwords -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     Password
                     <span class="text-red-500">*</span>
                   </label>
@@ -457,17 +455,16 @@ watch(country, (newCountry) => {
                     :disabled="loading" 
                     placeholder="••••••••" 
                     :type="passwordVisible ? 'text' : 'password'"
-                    size="lg"
+                    size="md"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
-                    class="w-full transition-all duration-200 hover:border-indigo-400 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
+                    class="w-full transition-all duration-200"
                   >
                     <template #trailing>
                       <UButton 
@@ -481,11 +478,11 @@ watch(country, (newCountry) => {
                       />
                     </template>
                   </UInput>
-                  <div v-if="passwordError" class="text-xs text-red-500 mt-1.5">{{ passwordError }}</div>
+                  <div v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</div>
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     Confirm Password
                     <span class="text-red-500">*</span>
                   </label>
@@ -494,17 +491,16 @@ watch(country, (newCountry) => {
                     :disabled="loading" 
                     placeholder="••••••••" 
                     :type="confirmPasswordVisible ? 'text' : 'password'"
-                    size="lg"
+                    size="md"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
-                    class="w-full transition-all duration-200 hover:border-indigo-400 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
+                    class="w-full transition-all duration-200"
                   >
                     <template #trailing>
                       <UButton 
@@ -518,19 +514,19 @@ watch(country, (newCountry) => {
                       />
                     </template>
                   </UInput>
-                  <div v-if="confirmPasswordError" class="text-xs text-red-500 mt-1.5">{{ confirmPasswordError }}</div>
+                  <div v-if="confirmPasswordError" class="text-xs text-red-500 mt-1">{{ confirmPasswordError }}</div>
                 </div>
               </div>
 
               <!-- Password Requirements -->
-              <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700/30 dark:to-gray-700/50 rounded-xl border border-blue-100 dark:border-gray-600/50">
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Password requirements:</p>
-                <div class="grid grid-cols-2 gap-2">
+              <div class="p-3 md:p-4 bg-gradient-to-r from-brand-start/5 via-brand-middle/5 to-brand-end/5 dark:from-gray-700/30 dark:to-gray-700/50 border border-brand-start/20 dark:border-gray-600/50">
+                <p class="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 md:mb-3">Password requirements:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 md:gap-2">
                   <div class="flex items-center gap-2">
                     <UIcon 
                       name="i-heroicons-check-circle" 
-                      class="w-4 h-4" 
-                      :class="password.length >= 8 ? 'text-emerald-500' : 'text-gray-300 dark:text-gray-500'" 
+                      class="w-3.5 h-3.5 md:w-4 md:h-4" 
+                      :class="password.length >= 8 ? 'text-brand-end' : 'text-gray-300 dark:text-gray-500'" 
                     />
                     <span class="text-xs" :class="password.length >= 8 ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'">
                       8+ characters
@@ -539,8 +535,8 @@ watch(country, (newCountry) => {
                   <div class="flex items-center gap-2">
                     <UIcon 
                       name="i-heroicons-check-circle" 
-                      class="w-4 h-4" 
-                      :class="/[A-Z]/.test(password) ? 'text-emerald-500' : 'text-gray-300 dark:text-gray-500'" 
+                      class="w-3.5 h-3.5 md:w-4 md:h-4" 
+                      :class="/[A-Z]/.test(password) ? 'text-brand-end' : 'text-gray-300 dark:text-gray-500'" 
                     />
                     <span class="text-xs" :class="/[A-Z]/.test(password) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'">
                       Uppercase letter
@@ -549,8 +545,8 @@ watch(country, (newCountry) => {
                   <div class="flex items-center gap-2">
                     <UIcon 
                       name="i-heroicons-check-circle" 
-                      class="w-4 h-4" 
-                      :class="/[a-z]/.test(password) ? 'text-emerald-500' : 'text-gray-300 dark:text-gray-500'" 
+                      class="w-3.5 h-3.5 md:w-4 md:h-4" 
+                      :class="/[a-z]/.test(password) ? 'text-brand-end' : 'text-gray-300 dark:text-gray-500'" 
                     />
                     <span class="text-xs" :class="/[a-z]/.test(password) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'">
                       Lowercase letter
@@ -559,8 +555,8 @@ watch(country, (newCountry) => {
                   <div class="flex items-center gap-2">
                     <UIcon 
                       name="i-heroicons-check-circle" 
-                      class="w-4 h-4" 
-                      :class="/[0-9]/.test(password) ? 'text-emerald-500' : 'text-gray-300 dark:text-gray-500'" 
+                      class="w-3.5 h-3.5 md:w-4 md:h-4" 
+                      :class="/[0-9]/.test(password) ? 'text-brand-end' : 'text-gray-300 dark:text-gray-500'" 
                     />
                     <span class="text-xs" :class="/[0-9]/.test(password) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'">
                       Number
@@ -570,9 +566,9 @@ watch(country, (newCountry) => {
               </div>
 
               <!-- Location -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     Country
                     <span class="text-red-500">*</span>
                   </label>
@@ -581,60 +577,58 @@ watch(country, (newCountry) => {
                     :disabled="loading" 
                     :items="countries" 
                     searchable 
-                    size="lg"
+                    size="md"
                     placeholder="Select country"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
                     class="w-full"
                   >
                     <template #leading>
-                      <UIcon name="i-heroicons-globe-alt" class="w-5 h-5 text-gray-400" />
+                      <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                     </template>
                   </USelectMenu>
                   
-                  <div v-if="locationData?.suggestedCountry" class="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 mt-2">
+                  <div v-if="locationData?.suggestedCountry" class="flex items-center gap-1.5 text-xs text-brand-end dark:text-brand-middle mt-1.5">
                     <UIcon name="i-heroicons-map-pin" class="w-3 h-3" />
                     <span>Detected: {{ locationData.suggestedCountry }}</span>
                   </div>
                 </div>
 
                 <div class="space-y-1.5">
-                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                     {{ country === 'Kenya' ? 'County' : 'Region' }}
                   </label>
                   <USelectMenu 
                     v-model="state" 
                     :disabled="loading || !country" 
                     :items="states" 
-                    size="lg"
+                    size="md"
                     :placeholder="country === 'Kenya' ? 'Select county' : 'Select region'"
                     :ui="{
-                      rounded: 'rounded-xl',
-                      padding: { lg: 'px-4 py-3' },
+                      padding: { md: 'px-4 py-2.5' },
                       color: {
                         gray: {
-                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600'
+                          outline: 'dark:bg-gray-700/50 bg-gray-50 border-gray-200 dark:border-gray-600 focus:border-brand-start focus:ring-brand-start/20'
                         }
                       }
                     }"
                     class="w-full"
                   >
                     <template #leading>
-                      <UIcon name="i-heroicons-map" class="w-5 h-5 text-gray-400" />
+                      <UIcon name="i-heroicons-map" class="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
                     </template>
                   </USelectMenu>
                 </div>
               </div>
 
               <!-- Terms -->
-              <div class="pt-2">
+              <div class="pt-1 md:pt-2">
                 <UCheckbox 
                   v-model="agreeToTerms" 
                   :disabled="loading" 
@@ -642,16 +636,16 @@ watch(country, (newCountry) => {
                   :ui="{
                     background: 'bg-white dark:bg-gray-700',
                     border: 'border-gray-300 dark:border-gray-600',
-                    ring: 'focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2'
+                    ring: 'focus-visible:ring-2 focus-visible:ring-brand-start focus-visible:ring-offset-2'
                   }"
                 >
                   <template #label>
-                    <div class="space-y-1">
-                      <span class="text-sm text-gray-700 dark:text-gray-300">
+                    <div class="space-y-0.5 md:space-y-1">
+                      <span class="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                         I agree to the
                         <NuxtLink 
                           to="/terms" 
-                          class="font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hover:underline"
+                          class="font-semibold text-brand-start hover:text-brand-end dark:text-brand-middle dark:hover:text-brand-start transition-colors hover:underline"
                           target="_blank"
                         >
                           Terms & Conditions
@@ -659,7 +653,7 @@ watch(country, (newCountry) => {
                         and
                         <NuxtLink 
                           to="/privacy" 
-                          class="font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hover:underline"
+                          class="font-semibold text-brand-start hover:text-brand-end dark:text-brand-middle dark:hover:text-brand-start transition-colors hover:underline"
                           target="_blank"
                         >
                           Privacy Policy
@@ -677,51 +671,50 @@ watch(country, (newCountry) => {
               <UButton 
                 type="submit" 
                 :loading="loading" 
-                size="lg"
+                size="md"
                 :ui="{
-                  rounded: 'rounded-xl',
-                  padding: { lg: 'px-6 py-3.5' }
+                  padding: { md: 'px-6 py-2.5' }
                 }"
-                class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all duration-300 transform hover:-translate-y-0.5"
+                class="w-full bg-gradient-to-r from-brand-start via-brand-middle to-brand-end hover:from-brand-start/90 hover:via-brand-middle/90 hover:to-brand-end/90 shadow-lg shadow-brand-start/20 hover:shadow-brand-start/30 transition-all duration-300"
               >
                 <template #leading>
-                  <UIcon v-if="!loading" name="i-heroicons-user-plus" class="w-5 h-5" />
+                  <UIcon v-if="!loading" name="i-heroicons-user-plus" class="w-4 h-4 md:w-5 md:h-5" />
                 </template>
-                <span class="font-semibold text-base">
+                <span class="font-semibold text-sm md:text-base">
                   {{ loading ? 'Creating Account...' : 'Create Account' }}
                 </span>
               </UButton>
             </form>
 
             <!-- Divider -->
-            <div class="relative my-6">
+            <div class="relative my-4 md:my-6">
               <div class="absolute inset-0 flex items-center">
                 <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
               </div>
               <div class="relative flex justify-center">
-                <span class="px-4 bg-white dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <span class="px-3 md:px-4 bg-white dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Or continue with
                 </span>
               </div>
             </div>
 
             <!-- Social Login -->
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
               <UButton 
                 @click="signInWithSocial('google')" 
                 :disabled="loading" 
                 color="white" 
                 variant="outline"
+                size="md"
                 :ui="{
-                  rounded: 'rounded-xl',
-                  padding: { lg: 'px-4 py-3' }
+                  padding: { md: 'px-4 py-2.5' }
                 }"
                 class="border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
               >
                 <template #leading>
-                  <UIcon name="i-simple-icons-google" class="w-5 h-5 text-red-500" />
+                  <UIcon name="i-simple-icons-google" class="w-4 h-4 md:w-5 md:h-5 text-red-500" />
                 </template>
-                <span class="text-sm font-medium">Google</span>
+                <span class="text-xs md:text-sm font-medium">Google</span>
               </UButton>
 
               <UButton 
@@ -729,26 +722,26 @@ watch(country, (newCountry) => {
                 :disabled="loading" 
                 color="white" 
                 variant="outline"
+                size="md"
                 :ui="{
-                  rounded: 'rounded-xl',
-                  padding: { lg: 'px-4 py-3' }
+                  padding: { md: 'px-4 py-2.5' }
                 }"
                 class="border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
               >
                 <template #leading>
-                  <UIcon name="i-simple-icons-facebook" class="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                  <UIcon name="i-simple-icons-facebook" class="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-500" />
                 </template>
-                <span class="text-sm font-medium">Facebook</span>
+                <span class="text-xs md:text-sm font-medium">Facebook</span>
               </UButton>
             </div>
 
             <!-- Login Link -->
-            <div class="pt-6 text-center border-t border-gray-100 dark:border-gray-700/50 mt-6">
-              <p class="text-sm text-gray-600 dark:text-gray-400">
+            <div class="pt-4 md:pt-6 text-center border-t border-gray-100 dark:border-gray-700/50 mt-4 md:mt-6">
+              <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Already have an account?
                 <NuxtLink 
                   to="/auth/login" 
-                  class="font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all duration-200 ml-1 hover:underline"
+                  class="font-semibold text-brand-start hover:text-brand-end dark:text-brand-middle dark:hover:text-brand-start transition-all duration-200 ml-1 hover:underline"
                 >
                   Sign in here
                 </NuxtLink>
@@ -758,16 +751,22 @@ watch(country, (newCountry) => {
         </div>
 
         <!-- Security Footer -->
-        <div class="px-6 md:px-8 py-3 bg-gradient-to-r from-indigo-50/50 to-blue-50/50 dark:from-gray-700/30 dark:to-gray-700/20 border-t border-gray-100 dark:border-gray-700/50 text-center">
-          <div class="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-            <UIcon name="i-heroicons-lock-closed" class="w-3 h-3 text-indigo-500 dark:text-indigo-400" />
-            <span>Your data is encrypted and secure • GDPR compliant</span>
+        <div class="px-4 sm:px-6 md:px-8 py-2.5 md:py-3 bg-gradient-to-r from-brand-start/5 via-brand-middle/5 to-brand-end/5 dark:from-gray-700/30 dark:to-gray-700/20 border-t border-gray-100 dark:border-gray-700/50 text-center">
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs text-gray-600 dark:text-gray-400">
+            <div class="flex items-center gap-1.5">
+              <UIcon name="i-heroicons-lock-closed" class="w-3 h-3 text-brand-start dark:text-brand-middle" />
+              <span>Your data is encrypted and secure</span>
+            </div>
+            <span class="hidden sm:inline">•</span>
+            <span>GDPR compliant</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+
 
 <style scoped>
 @keyframes blob {

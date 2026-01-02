@@ -54,6 +54,14 @@
 <script setup lang="ts">
 const { get, post } = useApi()
 
+
+definePageMeta({
+  breadcrumb: {
+    label: 'Home',
+    icon: 'i-lucide-home'
+  }
+})
+
 const { data: apartments, pending: apartmentLoading } = await useAsyncData(
   'apartment',
   () => get('/apartments')

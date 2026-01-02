@@ -4,15 +4,23 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 const toast = useToast()
 
 const viewLayout = ref<'grid' | 'list'>('grid')
-const files = ref<File[]>([])
 const isSaving = ref<boolean>(false)
-// const props = defineProps<{
-//     modelValue: any
-// }>()
+const props = defineProps<{
+    modelValue: File[] | null
+}>()
 
 const emit = defineEmits<{
     (e: 'update:modelValue', files: File[]): void
+    (e: 'reset'): void
+    (e: 'save'): void
 }>()
+
+const files = computed({
+    get: () => props.modelValue || [],
+    set: (value: File[]) => {
+        emit('update:modelValue', value)
+    }
+})
 
 const MAX_IMAGE_SIZE_MB = 50
 
@@ -65,19 +73,6 @@ const validateFiles = (incoming: File[]) => {
     return valid
 }
 
-watch(
-    files,
-    (newFiles) => {
-        const validated = validateFiles(newFiles)
-
-        if (validated.length !== newFiles.length) {
-            files.value = validated
-        }
-
-        // emit('update:modelValue', validated)
-    },
-    { deep: true }
-)
 
 
 const handleSave = async () => {
@@ -88,7 +83,7 @@ const handleSave = async () => {
         files.value = validated
     }
 
-    emit('update:modelValue', validated)
+    emit('save')
     isSaving.value = false
 }
 

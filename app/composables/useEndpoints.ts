@@ -2,15 +2,23 @@ export const useEndpoints = () => {
   const apiBase = useAppConfig().site.apiBase
 
   return {
+    public: {
+      info: (infoName: string) => `/public/${infoName}/info`,
+    },
+    utilities:{
+      propertyCategories:'/utilities/property-categories'
+    },
     user: {
       login: '/auth/login',
       register: '/auth/user/register',
       profile: '/auth/profile',
+      searchSuggestions: '/user/search/suggestions',
+      searhHistory: (id: string) => `/user/${id}/search-history`,
     },
 
     auth: {
       googleLogin: `${apiBase}/api/v1/auth/google_login`,
-      facebookLogin: '/auth/facebook_login',
+      facebookLogin: `${apiBase}/api/v1/auth/facebook_login`,
       sendVerificationCode: '/auth/verification/send-code',
       verifyCode: '/auth/verification/verify-code',
       renewToken: '/auth/verification/new-token',
@@ -21,6 +29,11 @@ export const useEndpoints = () => {
 
     rental: {
       create: '/rental/',
+      list: '/rental/',
+      listTrending:'/rentals/trending',
+      listFeatured:'/rentals/featured',
+      listInteractive:'/rentals/intractive',
+
       getById: (id: string) => `/rental/${id}`,
       getBySlug: (slug: string) => `/rental/slug/${slug}`,
 

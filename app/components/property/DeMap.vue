@@ -83,14 +83,21 @@ const statusOptions: StatusOption[] = [
     { value: 'E', label: 'Economy', color: 'bg-red-600', darkColor: 'dark:bg-red-700' }
 ]
 
+interface FocusMapData {
+  country?: string
+  city?: string
+}
+
 const props = withDefaults(defineProps<{
-    heatMaps?: Property[]
-    asInput?: boolean
-    propertyLocation?: PropertyLocation
+  heatMaps?: Property[]
+  asInput?: boolean
+  propertyLocation?: PropertyLocation
+  focusMapData?: FocusMapData
 }>(), {
-    heatMaps: () => [],
-    asInput: false,
-    propertyLocation: () => ({ lat: 0.0, long: 0.0 })
+  heatMaps: () => [],
+  asInput: false,
+  propertyLocation: () => ({ lat: 0, long: 0 }),
+  focusMapData: () => ({})
 })
 
 const emit = defineEmits(['save-location'])
@@ -197,6 +204,123 @@ const createCustomIcon = (property: Property, isHovered: boolean) => {
 onMounted(() => {
     isReady.value = true
 })
+
+const focusMap = async (focusData: FocusMapData) => {
+  if (!focusData.country && !focusData.city) return
+  
+  try {
+    let result
+    
+    if (focusData.city) {
+      // Try to geocode city within country
+      result = await geocodeLocation({
+        city: focusData.city,
+        country: focusData.country
+      })
+      
+      console.log("focusing results::",result)
+      if (result) {
+        center.value = [result.lat, result.lng]
+        zoom.value = focusData.city ? 12 : 6 // Higher zoom for cities
+        
+        // if (result.boundingbox) {
+        //   const bounds = $leaflet.latLngBounds(
+        //     [$leaflet.latLng(result.boundingbox[0], result.boundingbox[2]), // SW
+        //      $leaflet.latLng(result.boundingbox[1], result.boundingbox[3])] // NE
+        //   )
+          
+        //   // Get map instance and fit bounds
+        //   const map = $refs.map?.leafletObject
+        //   if (map) {
+        //     map.fitBounds(bounds, { padding: [50, 50] })
+        //   }
+        // }
+      }
+    } else if (focusData.country) {
+      // Geocode country only
+      result = await getCountryBounds(focusData.country)
+      
+      if (result) {
+        center.value = [result.lat, result.lng]
+        zoom.value = 5 // Country-level zoom
+        
+        if (result.boundingbox) {
+          const bounds = $leaflet.latLngBounds(
+            [$leaflet.latLng(result.boundingbox[0], result.boundingbox[2]),
+             $leaflet.latLng(result.boundingbox[1], result.boundingbox[3])]
+          )
+          
+          const map = $refs.map?.leafletObject
+          if (map) {
+            map.fitBounds(bounds, { padding: [50, 50] })
+          }
+        }
+      }
+    }
+    
+    // Show notification
+    if (result) {
+      useToast().add({
+        title: 'Map Focused',
+        description: `Centered on ${focusData.city ? focusData.city + ', ' : ''}${focusData.country || ''}`,
+        icon: 'i-heroicons-map-pin',
+        color: 'green'
+      })
+    } else {
+      useToast().add({
+        title: 'Location Not Found',
+        description: `Could not find ${focusData.city ? focusData.city + ', ' : ''}${focusData.country || ''}`,
+        icon: 'i-heroicons-exclamation-triangle',
+        color: 'orange'
+      })
+    }
+  } catch (error) {
+    console.error('Failed to focus map:', error)
+    useToast().add({
+      title: 'Geocoding Error',
+      description: 'Failed to locate the specified area',
+      icon: 'i-heroicons-exclamation-circle',
+      color: 'red'
+    })
+  }
+}
+
+const watchFocusData = async (focus: FocusMapData) => {
+  if (!focus || (!focus.country && !focus.city)) return
+  
+  // Debounce to avoid multiple rapid calls
+  if (focusDebounceTimer.value) {
+    clearTimeout(focusDebounceTimer.value)
+  }
+  
+  focusDebounceTimer.value = setTimeout(async () => {
+    await focusMap(focus)
+  }, 500)
+}
+
+const focusDebounceTimer = ref<NodeJS.Timeout | null>(null)
+
+
+watch(
+  () => props.focusMapData,
+  (newFocus) => {
+    watchFocusData(newFocus || {})
+  },
+  { deep: true, immediate: true }
+)
+
+// Clean up
+onBeforeUnmount(() => {
+  if (focusDebounceTimer.value) {
+    clearTimeout(focusDebounceTimer.value)
+  }
+})
+
+// Add manual focus method
+const focusOnLocation = async (country?: string, city?: string) => {
+  await focusMap({ country, city })
+}
+
 </script>
 
 <template>

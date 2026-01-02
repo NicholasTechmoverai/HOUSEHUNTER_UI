@@ -4,6 +4,7 @@
 @theme static {
   --font-sans: 'Public Sans', sans-serif;
 
+  /* Your existing greens */
   --color-green-50: #EFFDF5;
   --color-green-100: #D9FBE8;
   --color-green-200: #B3F5D1;
@@ -15,4 +16,16 @@
   --color-green-800: #016538;
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
+
+  /* Add brand colors for gradient */
+  --color-brand-start: #059669;
+  --color-brand-middle: #10B981;
+  --color-brand-end: #0D9488;
+  
+  /* Optional: Define as CSS custom properties too */
+  --ui-bgColors-brand-start: var(--color-brand-start);
+  --ui-bgColors-brand-middle: var(--color-brand-middle);
+  --ui-bgColors-brand-end: var(--color-brand-end);
+
+  
 }
