@@ -20,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import { useUserStore, useAuthStore } from '#imports'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()

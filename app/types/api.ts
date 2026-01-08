@@ -25,3 +25,4 @@ export interface ApiError extends Error {
   code?: string
   response?: any
 }
+

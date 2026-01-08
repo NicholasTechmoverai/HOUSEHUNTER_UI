@@ -18,6 +18,7 @@ export const useEndpoints = () => {
 
     auth: {
       googleLogin: `${apiBase}/api/v1/auth/google_login`,
+      oneTapGoogleLogin:`/auth/onetap-google-login`,
       facebookLogin: `${apiBase}/api/v1/auth/facebook_login`,
       sendVerificationCode: '/auth/verification/send-code',
       verifyCode: '/auth/verification/verify-code',

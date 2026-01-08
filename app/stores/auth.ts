@@ -250,6 +250,21 @@ export const useAuthStore = defineStore('auth', {
       return userStore.user?.phone_number ? 'phone' : 'email'
     },
 
+    getLastAttemptedRoute() {
+      if (this.lastAttemptedRoute) {
+        const route = this.lastAttemptedRoute
+        this.clearLastAttemptedRoute()
+        return {
+          type: 'redirect' as const,
+          path: route.path,
+          params: route.params,
+          query: route.query
+        }
+      }
+
+      return null
+    },
+
     restorePendingActionsAfterAuth() {
       if (this.hasPendingActions) {
         const nextAction = this.popNextAction()
@@ -302,77 +317,27 @@ export const useAuthStore = defineStore('auth', {
       return true
     },
     async handleGoogleLogin(): Promise<void> {
-      try {
-        const width = 500;
-        const height = 600;
+      const url = useEndpoints().auth.googleLogin
+      this.setLastAttemptedRouteToCurrent()
 
-        // Center the popup
-        const left = (window.screen.width - width) / 2;
-        const top = (window.screen.height - height) / 2;
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
-        // Open popup window
-        const popup = window.open(
-          useEndpoints().auth.googleLogin,
-          'Google Login',
-          `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
-        );
+      if (isMobile) {
+        window.location.href = url
+        return
+      }
 
-        if (!popup) {
-          throw new Error('Popup blocked! Please allow popups for this site.');
-        }
+      const popup = window.open(url, 'Google Login', 'width=500,height=600')
 
-        // Listen for messages from the popup
-        const messageHandler = (event: MessageEvent) => {
-          // Security: only accept messages from our backend
-          if (event.origin !== useAppConfig().site.apiBase) {
-            throw new Error('unauthorized origin'+ event.origin)
-          };
-
-          const data = event.data;
-
-          if (data.type === 'google-login-success') {
-            console.log('✅ Google login successful:', data.user);
-
-            useUserStore().setUser(data.user.user,data.user.access_token)
-            const redirectTo = this.lastAttemptedRoute.fullPath
-            navigateTo(redirectTo)
-            this.clearLastAttemptedRoute()
-
-            // Clean up
-            window.removeEventListener('message', messageHandler);
-
-            if (!popup.closed) popup.close();
-          }
-
-          if (data.type === 'google-login-error') {
-            console.error('❌ Google login failed:', data.error);
-            // this.showError(data.error || 'Google login failed');
-            window.removeEventListener('message', messageHandler);
-          }
-        };
-
-        window.addEventListener('message', messageHandler);
-
-        // Optional: Check if popup closed without sending message
-        const checkPopup = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkPopup);
-            window.removeEventListener('message', messageHandler);
-
-            // Only show error if we haven't already handled success/error
-            // if (!this.googleLoginComplete) {
-            //   this.showError('Login cancelled or popup closed');
-            // }
-          }
-        }, 500);
-
-      } catch (error: any) {
-        console.error('Google login error:', error);
-        // this.showError(error.message || 'Failed to start Google login');
+      if (!popup) {
+        window.location.href = url
       }
     },
 
+
     async handleFacebookLogin() {
+      this.setLastAttemptedRouteToCurrent()
+
       //  
     },
 

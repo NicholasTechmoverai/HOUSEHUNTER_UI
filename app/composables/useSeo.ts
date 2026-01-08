@@ -18,6 +18,7 @@ export const useSeo = ({ title, description, image }: SEOOptions = {}) => {
 
   // Basic site-wide head
   useHead({
+    
     title: seoTitle,
     meta: [
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },

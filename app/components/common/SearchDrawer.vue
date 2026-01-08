@@ -1,18 +1,19 @@
 <template>
-  <div class="h-full flex flex-col bg-white dark:bg-gray-900">
+  <div class="h-full px-2 pt-4 flex flex-col bg-white dark:bg-gray-900">
     <!-- Search Input -->
-    <div class="p-4 border-b border-gray-100 dark:border-gray-800">
+    <div class="border-b border-gray-100 dark:border-gray-800">
       <UInput
         ref="searchInput"
         v-model="searchQuery"
         :loading="loading"
         placeholder="Search anything..."
+        color="primary" variant="ghost" :highlight=false
         size="lg"
         autocomplete="off"
-        class="w-full"
+        class="w-full outline-0 border-0 rounded-[20px]"
         :ui="{
           base: 'h-12',
-          rounded: 'rounded-xl'
+          rounded: 'rounded-full'
         }"
         @keydown.enter="handleSearch"
       >

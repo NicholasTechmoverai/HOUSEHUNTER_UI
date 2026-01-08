@@ -152,3 +152,36 @@ export const cachedGeocode = async (options: GeocodeOptions): Promise<GeocodeRes
   
   return result
 }
+
+
+type OpenMapPayload = {
+  address?: string
+  city?: string
+  lat?: number
+  long?: number
+}
+
+
+export const openOnGoogleMaps = async (val: OpenMapPayload) => {
+  let query = ''
+
+  if (typeof val.lat === 'number' && typeof val.long === 'number') {
+    query = `${val.lat},${val.long}`
+  } else if (val.address && val.city) {
+    query = `${val.address}, ${val.city}`
+  } else if (val.address) {
+    query = val.address
+  } else if (val.city) {
+    query = val.city
+  } else {
+    console.warn('No valid location data provided')
+    return
+  }
+
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+
+  await navigateTo(url, {
+    external: true,
+    open: { target: '_blank' }
+  })
+}

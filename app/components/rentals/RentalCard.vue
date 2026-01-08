@@ -1,10 +1,10 @@
 <template>
-  <NuxtLink :to="`/rentals/${rental?.public_id}`" class="block w-full mx-auto group">
-    <div class="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-none overflow-hidden transition-all duration-300 hover:shadow-xl">
+  <NuxtLink :to="`/rentals/${rental?.category}/${rental?.public_id}`" class="block w-full mx-auto group">
+    <div class="relative lg:min-w-[300px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-none overflow-hidden transition-all duration-300 hover:shadow-xl">
 
       <div class="relative h-64 flex bg-gray-50 dark:bg-gray-950">
         <div class="w-2/3 h-full relative overflow-hidden border-r border-white/10 dark:border-gray-800/50">
-          <img :src="rental?.gallery?.[0]?.url || '/placeholder.jpg'"
+          <img :src="rental?.gallery?.[0]?.url || '/empty_image_placeholder.png'"
             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
@@ -23,10 +23,10 @@
 
         <div class="w-1/3 flex flex-col">
           <div class="h-1/2 relative overflow-hidden border-b border-white/10 dark:border-gray-800/50">
-            <img :src="rental?.gallery?.[1]?.url || '/placeholder.jpg'" class="w-full h-full object-cover" />
+            <img :src="rental?.gallery?.[1]?.url || '/empty_image_placeholder.png'" class="w-full h-full object-cover" />
           </div>
           <div class="h-1/2 relative overflow-hidden">
-            <img :src="rental?.gallery?.[2]?.url || '/placeholder.jpg'" class="w-full h-full object-cover" />
+            <img :src="rental?.gallery?.[2]?.url || '/empty_image_placeholder.png'" class="w-full h-full object-cover" />
             <div v-if="remainingCount > 0"
               class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white">
               <UIcon name="i-heroicons-photo" class="w-5 h-5 mb-0.5" />

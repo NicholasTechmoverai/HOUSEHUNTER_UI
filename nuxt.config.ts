@@ -11,7 +11,12 @@ const FAVICON = '/f_logo.png'
 
 export default defineNuxtConfig({
   ssr: true,
-
+ runtimeConfig: {
+    public: {
+      googleClientId: process.env.GOOGLE_CLIENT_ID
+    }
+  },
+  
   devtools: { enabled: true },
 
   modules: [
@@ -58,7 +63,16 @@ export default defineNuxtConfig({
   },
 
   app: {
+      pageTransition: { name: 'page', mode: 'out-in' },
+
     head: {
+      script: [
+        {
+          src: 'https://accounts.google.com/gsi/client',
+          async: true,
+          defer: true
+        }
+      ],
       title: `${SITE_NAME} – Discover Properties`,
       meta: [
         { name: 'description', content: DEFAULT_DESCRIPTION },

@@ -21,14 +21,14 @@ export const useUserStore = defineStore('user', {
     profile: (state) => state.user,
     hasEmailVerified: (state) => state.user?.email_verified || false,
     hasPhoneVerified: (state) => state.user?.phone_verified || false,
-    requiresVerification: (state) =>
-      !state.user?.email_verified || !state.user?.phone_verified
+    requiresVerification: (state) => !state.user?.email_verified || !state.user?.phone_verified
   },
 
   actions: {
     updateBreadcrumbItems(item) {
       this.breadCrumbItems = item
     },
+
     setUser(user: any, token?: string) {
       this.user = user
       if (token) this.token = token
@@ -121,8 +121,7 @@ export const useUserStore = defineStore('user', {
           message: response.message || 'Login failed'
         }
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message || error.message || 'Login failed'
+        this.error = error.response?.data?.message || error.message || 'Login failed'
         throw error
       } finally {
         this.loading = false
@@ -155,12 +154,10 @@ export const useUserStore = defineStore('user', {
             redirectTo: this.redirectRoutes.verify_email
           }
         }
-        
 
         return response
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message || error.message || 'Registration failed'
+        this.error = error.response?.data?.message || error.message || 'Registration failed'
         throw error
       } finally {
         this.loading = false
@@ -184,8 +181,7 @@ export const useUserStore = defineStore('user', {
         if (error.response?.status === 401) {
           this.clearUser()
         }
-        this.error =
-          error.response?.data?.message || error.message || 'Failed to fetch user'
+        this.error = error.response?.data?.message || error.message || 'Failed to fetch user'
         throw error
       } finally {
         this.loading = false
@@ -209,10 +205,7 @@ export const useUserStore = defineStore('user', {
 
         return response
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Email verification failed'
+        this.error = error.response?.data?.message || error.message || 'Email verification failed'
         throw error
       } finally {
         this.loading = false
@@ -236,10 +229,7 @@ export const useUserStore = defineStore('user', {
 
         return response
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Phone verification failed'
+        this.error = error.response?.data?.message || error.message || 'Phone verification failed'
         throw error
       } finally {
         this.loading = false
@@ -262,10 +252,7 @@ export const useUserStore = defineStore('user', {
 
         return response
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Profile update failed'
+        this.error = error.response?.data?.message || error.message || 'Profile update failed'
         throw error
       } finally {
         this.loading = false
@@ -282,10 +269,7 @@ export const useUserStore = defineStore('user', {
       try {
         return await post(endpoints.user.changePassword, data)
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Password change failed'
+        this.error = error.response?.data?.message || error.message || 'Password change failed'
         throw error
       } finally {
         this.loading = false
@@ -302,10 +286,7 @@ export const useUserStore = defineStore('user', {
       try {
         return await post(endpoints.user.forgotPassword, { email })
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Password reset request failed'
+        this.error = error.response?.data?.message || error.message || 'Password reset request failed'
         throw error
       } finally {
         this.loading = false
@@ -322,59 +303,77 @@ export const useUserStore = defineStore('user', {
       try {
         return await post(endpoints.user.resetPassword, data)
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'Password reset failed'
+        this.error = error.response?.data?.message || error.message || 'Password reset failed'
         throw error
       } finally {
         this.loading = false
       }
     },
 
-    async get_search_history(type:string | null = null){
-      if(!this.user)return
+    async get_search_history(type: string | null = null) {
+      if (!this.user) return
       const { get } = useApi()
       const endpoints = useEndpoints()
 
       try {
-        return await get(endpoints.user.searhHistory(this.user.id), {type},true)
+        return await get(endpoints.user.searchHistory(this.user.id), { type }, true)
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'getting  history failed'
+        this.error = error.response?.data?.message || error.message || 'Getting history failed'
         throw error
-      } finally {
       }
-
     },
 
-    async get_suggestions(){
+    async get_suggestions() {
       const { get } = useApi()
       const endpoints = useEndpoints()
 
       try {
-        return await get(endpoints.user.searhHistory(this.user.id), {},true)
+        return await get(endpoints.user.searchHistory(this.user.id), {}, true)
       } catch (error: any) {
-        this.error =
-          error.response?.data?.message ||
-          error.message ||
-          'getting  history failed'
+        this.error = error.response?.data?.message || error.message || 'Getting history failed'
         throw error
-      } finally {
       }
+    },
 
+    init(){
+      if(!this.user){
+          useGoogleOneTap()
+      }
+    },
 
+    initCrossTabListener() {
+      this.init()
+      window.addEventListener('storage', (event: StorageEvent) => {
+        if (event.key === 'user') {
+          if (event.newValue) {
+            try {
+              const data = JSON.parse(event.newValue)
+              this.user = data.user || null
+              this.token = data.token || null
+            } catch (e) {
+              console.error('Failed to parse user-store:', e)
+            }
+          } else {
+            this.clearUser()
+          }
+        }
+      })
+    },
+
+    onMounted() {
+      this.init()
+      this.initCrossTabListener()
     }
   },
 
   persist: {
-    storage: process.client ? localStorage : undefined,
-    paths: ['user', 'token'],
-    serializer: {
-      serialize: JSON.stringify,
-      deserialize: JSON.parse
-    }
+    enabled: true,
+    strategies: [
+      {
+        key: 'user-store',
+        storage: import.meta.client ? localStorage : undefined,
+        paths: ['user', 'token']
+      }
+    ]
   }
 })

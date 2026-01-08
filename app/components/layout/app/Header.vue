@@ -47,12 +47,12 @@ const items = computed<NavigationMenuItem[]>(() => [
   },
 
   // User
-  {
-    label: 'My Account',
-    to: '/account',
-    icon: 'i-lucide-user',
-    active: route.path.startsWith('/account')
-  }
+  // {
+  //   label: 'My Account',
+  //   to: '/account',
+  //   icon: 'i-lucide-user',
+  //   active: route.path.startsWith('/account')
+  // }
 ])
 </script>
 

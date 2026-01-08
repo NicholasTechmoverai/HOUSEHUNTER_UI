@@ -1,67 +1,38 @@
-
 <script setup lang="ts">
 const { get } = useApi()
 const endpoints = useEndpoints()
-const indicator = useLoadingIndicator()
-
-const searchQuery = ref("")
-useSeo({
-  title: 'Discover Amazing Rentals',
-  description: 'Browse available rentals and find your next home.',
-  ogImage: '/images/rentals-og.jpg',
-  twitterCard: 'summary_large_image'
-})
-
 const route = useRoute()
 
-watch(
-  () => route.query,
-  (query) => {
-    handleSearch(query)
-  },
-  { immediate: true }
-)
+// category from URL param
+const category = computed(() => route.params.category as string)
 
-const handleSearch = (query) => {
-  console.log('Searching for:', query)
-  // Call your search API
-}
-
-const handleClear = () => {
-  console.log('Search cleared')
-}
-
-
+useSeo({
+  title: `${category.value.replaceAll('_', ' ')} modern rentals`,
+  description: 'Browse available rentals and find your next home.',
+})
 
 const {
   data: allRentals,
   pending: allLoading,
   error: allError,
-  refresh: refreshAll
+  refresh: refreshAll,
 } = await useAsyncData(
-  'all-rentals',
-  async () => {
-    indicator.start()
-    try {
-      return await get(endpoints.rental.list)
-    } finally {
-      indicator.finish()
-    }
+  () => `all-rentals-${category.value}`,
+  () => get(endpoints.rental.list, { category: category.value }),
+  {
+    watch: [category],
   }
 )
 </script>
 
+
+
 <template>
   <div class="space-y-12">
-      <div>
-    <div class="m-3 space-y-2 flex-col md:fl">
+      <div class="m-3 space-y-2 flex-col md:fl">
       <NavigationBreadCrumb />
-      <div>
-        <SearchCard v-model="searchQuery" search-type="property" placeholder="Search properties..."
-          @search="handleSearch" @clear="handleClear" />
-      </div>
+      <SearchCard />
     </div>
-  </div>
     <!-- All Rentals Section -->
     <section>
       <UContainer class="py-8">

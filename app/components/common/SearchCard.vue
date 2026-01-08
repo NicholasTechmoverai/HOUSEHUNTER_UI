@@ -1,7 +1,7 @@
 <template>
     <div class="w-full">
-        <UPageCard title="Global Intelligence Search" :description="description" orientation="horizontal" :spotlight="true"
-            spotlight-color="primary"
+        <UPageCard title="Global Intelligence Search" :description="description" orientation="horizontal"
+            :spotlight="true" spotlight-color="primary"
             class="w-full max-w-4xl mx-auto overflow-hidden group cursor-pointer border border-transparent hover:border-primary-500/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary-500/5"
             :ui="{
                 body: { base: 'flex-1 p-6' },
@@ -130,7 +130,7 @@
             </Transition>
         </Teleport>
 
-        <UDrawer v-model:open="isOpen" :direction="screen.isMobile.value  ? 'bottom' : 'right'" :ui="{
+        <UDrawer v-model:open="isOpen" :direction="screen.isMobile.value ? 'bottom' : 'right'" :ui="{
             overlay: { background: 'bg-gray-900/80 backdrop-blur-sm' },
             wrapper: 'h-[85vh] rounded-b-3xl overflow-hidden',
             container: 'bg-white dark:bg-gray-900',
@@ -165,8 +165,16 @@
 const props = defineProps<{
     modelValue?: string
     description?: string
+    type?: {
+        type: String,
+        default: 'rental'
+    }
 }>()
 const screen = useScreenSize()
+const endpoints = useEndpoints()
+const { get } = useApi()
+const router = useRouter()
+const route = useRoute()
 
 const emit = defineEmits(['update:modelValue', 'search'])
 
@@ -238,7 +246,12 @@ const selectQuery = (query: string) => {
 const performSearch = (query: string) => {
     loading.value = true
     emit('search', query)
-    setTimeout(() => { loading.value = false }, 1500)
+    router.push({
+        query: {
+            ...route.query,
+            q: query
+        }
+    })
 }
 
 const startVoiceSearch = () => {
@@ -296,36 +309,35 @@ watch(searchQuery, (newVal) => {
     emit('update:modelValue', newVal)
 })
 
-const router = useRouter()
-const route = useRoute()
+
 
 /* URL → UI */
 watch(
-  () => route.query.search,
-  (search) => {
-    const shouldBeOpen = search === 'true'
-    if (isOpen.value !== shouldBeOpen) {
-      isOpen.value = shouldBeOpen
-    }
-  },
-  { immediate: true }
+    () => route.query.search,
+    (search) => {
+        const shouldBeOpen = search === 'true'
+        if (isOpen.value !== shouldBeOpen) {
+            isOpen.value = shouldBeOpen
+        }
+    },
+    { immediate: true }
 )
 
 /* UI → URL */
 watch(isOpen, (open) => {
-  const query = { ...route.query }
+    const query = { ...route.query }
 
-  if (open) {
-    if (query.search !== 'true') {
-      query.search = 'true'
-      router.push({ query })
+    if (open) {
+        if (query.search !== 'true') {
+            query.search = 'true'
+            router.push({ query })
+        }
+    } else {
+        if ('search' in query) {
+            delete query.search
+            router.push({ query })
+        }
     }
-  } else {
-    if ('search' in query) {
-      delete query.search
-      router.push({ query })
-    }
-  }
 })
 
 </script>
