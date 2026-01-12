@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: null as any,
+    userproile: null as any,
     token: null as string | null,
     loading: false,
     breadCrumbItems: [],
@@ -335,9 +336,51 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    init(){
-      if(!this.user){
-          useGoogleOneTap()
+    async fetch_user_profile(): Promise<ApiResponse> {
+    
+      try {
+        const { post } = useApi()
+        const endpoints = useEndpoints()
+
+        const response = await post(
+          endpoints.user.profile,
+          {}, true
+        )
+
+       if( response.success ){
+        this.userproile = response.data.userprofile
+         return {
+          success: true,
+          message: 'Location saved successfully',
+          data: response
+        }
+       }else{
+        return {
+          success: false,
+          message: 'Failed to fetch user profile',
+          errors: response.errors || []
+        }
+       }
+
+       
+
+      } catch (error: any) {
+        this.ongoingCreate.location.status = 'error'
+        this.ongoingCreate.location.error = error.message
+        this.saveCurrentSession()
+
+        return {
+          success: false,
+          message: 'Failed to save location',
+          errors: [error.message]
+        }
+      } finally {
+      }
+    },
+
+    init() {
+      if (!this.user) {
+        useGoogleOneTap()
       }
     },
 

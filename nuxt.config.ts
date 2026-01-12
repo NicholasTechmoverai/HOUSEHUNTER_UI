@@ -121,7 +121,7 @@ export default defineNuxtConfig({
       { path: '~/components/property', pathPrefix: false },
       { path: '~/components/rentals', pathPrefix: false },
       // { path: '~/components/swaps', pathPrefix: false },
-      // { path: '~/components/user', pathPrefix: false },
+      { path: '~/components/user', pathPrefix: false },
       { path: '~/components/common', pathPrefix: false },
       { path: '~/components/auth', pathPrefix: false }
     ]

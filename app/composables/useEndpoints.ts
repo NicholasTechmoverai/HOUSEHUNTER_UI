@@ -14,6 +14,14 @@ export const useEndpoints = () => {
       profile: '/auth/profile',
       searchSuggestions: '/user/search/suggestions',
       searhHistory: (id: string) => `/user/${id}/search-history`,
+      getById: (id: string) => `/user/${id}`,
+      updateProfile: (id: string) => `/user/${id}`,
+      uploadAvatar: (id: string) => `/user/${id}/avatar`,
+      changePassword: (id: string) => `/user/${id}/change-password`,
+      getFavorites: (id: string) => `/user/${id}/favorites`,
+      addFavorite: (id: string) => `/user/${id}/favorites`,
+      removeFavorite: (id: string, propertyId: string) =>
+        `/user/${id}/favorites/${propertyId}`,
     },
 
     auth: {

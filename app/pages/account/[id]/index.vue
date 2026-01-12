@@ -4,8 +4,12 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
+const rentalStore = useRentalStore()
 
+await useAsyncData('rental', () =>
+  rentalStore.fetchRental(useRoute().params.id)
+)
 </script>
 
 <style>
