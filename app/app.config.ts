@@ -22,7 +22,7 @@ export default defineAppConfig({
 
   site: {
     name: 'HouseHunter',
-    url: 'https://househunter.com',
+    url: 'https://househunter.tera-in.top',
     description: 'Explore and list amazing real estate properties worldwide.',
     apiBase: 'https://api.tera-in.top',
     // apiBase: 'http://localhost:8000',

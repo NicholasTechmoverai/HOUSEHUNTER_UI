@@ -4,11 +4,12 @@ const layout = 'default'
 const toaster = { position: 'top-center' }
 
 const brandGradient = 'linear-gradient(90deg, var(--color-brand-start) 0%, var(--color-brand-middle) 50%, var(--color-brand-end) 100%)'
+const myFunction = () => 150
 
 const loadingOptions = {
   throttle: 0,
   duration: 2500,
-  estimatedProgress: 150,
+  estimatedProgress: myFunction,
   color: brandGradient,
   height: 2
 }

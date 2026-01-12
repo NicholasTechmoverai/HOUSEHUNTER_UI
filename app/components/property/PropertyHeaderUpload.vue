@@ -287,17 +287,15 @@ const resetForm = () => {
     title: '',
     category: 'rental',
     description: '',
-    profile_picture: 'mmmmmmmmm',
+    profile_picture: '',
     theme_color: '#FFFFFF',
     year_built: null,
     lot_size: null,
     floor_number: null
   }
 }
-console.log("received props:", props.modelValue)
 
 onMounted(() => {
-  console.log("received props:", props.modelValue)
   fetchCategories()
 })
 </script>

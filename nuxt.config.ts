@@ -1,7 +1,7 @@
 const SITE_NAME = 'HouseHunter'
-const SITE_URL = 'https://househunter.com'
-// const API_URL = 'https://api.househunter.com'
-const API_URL = 'http://localhost:8000'
+const SITE_URL = 'https://househunter.tera-in.top'
+const API_URL = 'https://api.tera-in.top'
+// const API_URL = 'http://localhost:8000'
 const DEV_HOST = 'househunter.tera-in.top'
 
 const DEFAULT_DESCRIPTION = 'Find, rent, and swap houses easily'
@@ -11,12 +11,15 @@ const FAVICON = '/f_logo.png'
 
 export default defineNuxtConfig({
   ssr: true,
- runtimeConfig: {
+  runtimeConfig: {
     public: {
       googleClientId: process.env.GOOGLE_CLIENT_ID
     }
   },
-  
+  nitro: {
+    preset: 'static'
+  },
+
   devtools: { enabled: true },
 
   modules: [
@@ -63,7 +66,7 @@ export default defineNuxtConfig({
   },
 
   app: {
-      pageTransition: { name: 'page', mode: 'out-in' },
+    pageTransition: { name: 'page', mode: 'out-in' },
 
     head: {
       script: [
@@ -117,15 +120,15 @@ export default defineNuxtConfig({
       { path: '~/components/apartments', pathPrefix: false },
       { path: '~/components/property', pathPrefix: false },
       { path: '~/components/rentals', pathPrefix: false },
-      { path: '~/components/swaps', pathPrefix: false },
-      { path: '~/components/user', pathPrefix: false },
+      // { path: '~/components/swaps', pathPrefix: false },
+      // { path: '~/components/user', pathPrefix: false },
       { path: '~/components/common', pathPrefix: false },
       { path: '~/components/auth', pathPrefix: false }
     ]
   },
 
   css: ['~/assets/css/main.css',
-        'leaflet/dist/leaflet.css'
+    'leaflet/dist/leaflet.css'
   ],
 
   robots: {

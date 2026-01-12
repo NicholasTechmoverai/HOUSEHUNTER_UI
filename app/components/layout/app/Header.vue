@@ -31,7 +31,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 
   // Actions
   {
-    label: 'Create Listing',
+    label: 'Create',
     to: '/create',
     icon: 'i-lucide-plus-square',
     variant: 'primary' as const,
@@ -69,7 +69,7 @@ const items = computed<NavigationMenuItem[]>(() => [
     <template #right>
       <UColorModeButton />
 
-      <UTooltip text="Open on GitHub" :kbds="['meta', 'G']">
+      <UTooltip text="More on profile" :kbds="['meta', 'P']">
         <LoggedIcon />
 
       </UTooltip>

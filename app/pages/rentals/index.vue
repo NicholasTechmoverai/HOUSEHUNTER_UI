@@ -13,6 +13,10 @@ useSeo({
 })
 
 const route = useRoute()
+const handleSearch = (query) => {
+  console.log('Searching for:', query)
+  // Call your search API
+}
 
 watch(
   () => route.query,
@@ -22,10 +26,7 @@ watch(
   { immediate: true }
 )
 
-const handleSearch = (query) => {
-  console.log('Searching for:', query)
-  // Call your search API
-}
+
 
 const handleClear = () => {
   console.log('Search cleared')
