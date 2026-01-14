@@ -11,7 +11,7 @@ export const useEndpoints = () => {
     user: {
       login: '/auth/login',
       register: '/auth/user/register',
-      profile: '/auth/profile',
+      profile: '/user/profile',
       searchSuggestions: '/user/search/suggestions',
       searhHistory: (id: string) => `/user/${id}/search-history`,
       getById: (id: string) => `/user/${id}`,

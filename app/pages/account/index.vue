@@ -621,11 +621,21 @@ const securitySettings = ref<SecuritySettings>({
   trustedDevices: ['iPhone 13', 'MacBook Pro', 'iPad Air']
 })
 
+
 // Options for dropdowns
 const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say']
 const localeOptions = ['en-KE', 'en-US', 'en-GB', 'sw-KE']
 const currencyOptions = ['KES', 'USD', 'EUR', 'GBP']
 const countryCodes = ['+1', '+44', '+254', '+255', '+256']
+
+
+const userStore = useUserStore()
+
+await useAsyncData('user_profile', () =>
+  userStore.fetch_user_profile()
+)
+
+
 
 // Share Options
 const shareOptions = [[

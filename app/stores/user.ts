@@ -336,7 +336,7 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async fetch_user_profile(): Promise<ApiResponse> {
+    async fetch_user_profile() {
     
       try {
         const { post } = useApi()
@@ -365,10 +365,6 @@ export const useUserStore = defineStore('user', {
        
 
       } catch (error: any) {
-        this.ongoingCreate.location.status = 'error'
-        this.ongoingCreate.location.error = error.message
-        this.saveCurrentSession()
-
         return {
           success: false,
           message: 'Failed to save location',
