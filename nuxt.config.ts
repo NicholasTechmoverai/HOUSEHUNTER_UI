@@ -123,7 +123,9 @@ export default defineNuxtConfig({
       // { path: '~/components/swaps', pathPrefix: false },
       { path: '~/components/user', pathPrefix: false },
       { path: '~/components/common', pathPrefix: false },
-      { path: '~/components/auth', pathPrefix: false }
+      { path: '~/components/auth', pathPrefix: false },
+      { path: '~/components/agent', pathPrefix: false },
+
     ]
   },
 

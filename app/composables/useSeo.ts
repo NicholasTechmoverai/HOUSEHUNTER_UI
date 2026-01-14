@@ -1,5 +1,5 @@
 // composables/useSeo.ts
-import { useRoute, useHead, useAppConfig } from '#imports'
+import { useRoute, useHead, useAppConfig, useRuntimeConfig } from '#imports'
 
 interface SEOOptions {
   title?: string
@@ -8,38 +8,57 @@ interface SEOOptions {
 }
 
 export const useSeo = ({ title, description, image }: SEOOptions = {}) => {
-  const config = useAppConfig()
   const route = useRoute()
+  const appConfig = useAppConfig()
+  const runtimeConfig = useRuntimeConfig()
 
-  const seoTitle = title ? `${title} - ${config.site.name}` : config.site.name
-  const seoDescription = description || config.site.description
-  const seoImage = image || config.site.defaultImage
-  const canonical = `${config.site.url.replace(/\/$/, '')}${route.fullPath}`
+  // Base site URL
+  const baseUrl = appConfig.site.url || runtimeConfig.public.siteUrl || ''
 
+  // Fallbacks
+  const defaultTitle = appConfig.site.name || 'HouseHunter'
+  const defaultDescription = appConfig.site.description || 'Discover properties and connect with agents.'
+  const defaultImage = appConfig.site.defaultImage || '/default-image.png'
+  const favicon = appConfig.site.favicon || '/favicon.png'
+
+  // Computed SEO fields
+  const seoTitle = title ? `${title} - ${defaultTitle}` : defaultTitle
+  const seoDescription = description || defaultDescription
+  const seoImage = image || defaultImage
+  const canonical = `${baseUrl.replace(/\/$/, '')}${route.fullPath}`
+
+  // Apply SEO meta to the page
   useHead({
     title: seoTitle,
-    htmlAttrs: { lang: config.site.locale || 'en' },
+    htmlAttrs: { lang: 'en' },
     meta: [
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      // Basic
       { name: 'description', content: seoDescription },
-      { name: 'apple-mobile-web-app-capable', content: 'yes' },
-      { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+      { name: 'author', content: 'HouseHunter' },
+
       // Open Graph
       { property: 'og:title', content: seoTitle },
       { property: 'og:description', content: seoDescription },
       { property: 'og:image', content: seoImage },
-      { property: 'og:type', content: 'website' },
       { property: 'og:url', content: canonical },
-      // Twitter Card
+      { property: 'og:type', content: 'website' },
+      { property: 'og:site_name', content: defaultTitle },
+
+      // Twitter
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: seoTitle },
       { name: 'twitter:description', content: seoDescription },
-      { name: 'twitter:image', content: seoImage }
+      { name: 'twitter:image', content: seoImage },
+      { name: 'twitter:creator', content: `@${defaultTitle}` },
+
+      // SEO helpers
+      { name: 'robots', content: 'index, follow' },
+      { name: 'theme-color', content: '#ffffff' }
     ],
     link: [
+      { rel: 'icon', type: 'image/png', href: favicon },
       { rel: 'canonical', href: canonical },
-      { rel: 'icon', href: config.site.favicon },
-      { rel: 'apple-touch-icon', href: '/icons/icon-192.png' }
+      { rel: 'apple-touch-icon', href: favicon }
     ]
   })
 }

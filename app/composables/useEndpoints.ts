@@ -111,6 +111,17 @@ export const useEndpoints = () => {
       search: '/rental/search',
       featured: '/rental/featured',
     },
+    agent:{
+      init: (id: string) => `/agent/${id}/init`,
+      create: '/agent/create',
+      update: (id: string) => `/agent/${id}/update`,
+      delete: (id: string) => `/agent/${id}/delete`,
+      uploadProfilePicture: (id: string) => `/agent/${id}/upload-profile-picture`,
+      getById: (id: string) => `/agent/${id}`,
+      getTopAgents: '/agent/top',
+      getAgentListings: (agentId: string) => `/agent/${agentId}/listings`,
+
+    },
 
     apartment: {
       getListings: '/listings',
