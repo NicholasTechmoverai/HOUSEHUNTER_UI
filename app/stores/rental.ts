@@ -3,42 +3,42 @@ import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 
 export interface ExtraFee {
-  id: string
-  description?: string
-  amount: number | string
+    id: string
+    description?: string
+    amount: number | string
 }
 
 export interface PropertyPrice {
-  amount: number
-  period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually'
-  currency: string
+    amount: number
+    period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually'
+    currency: string
 
-  depositAmount: number | null
-  depositType: 'One month rent' | 'Two months rent' | 'Fixed amount' | 'Negotiable' | null
+    depositAmount: number | null
+    depositType: 'One month rent' | 'Two months rent' | 'Fixed amount' | 'Negotiable' | null
 
-  isRefundable: boolean
-  minRentPeriod: number
-  utilitiesIncluded: boolean
+    isRefundable: boolean
+    minRentPeriod: number
+    utilitiesIncluded: boolean
 
-  extraFees: ExtraFee[]
+    extraFees: ExtraFee[]
 }
 interface Coordinates {
-  lat: number
-  long: number
+    lat: number
+    long: number
 }
 interface LocationUploadData {
-  country: string
-  state: string
-  city: string
-  address: string
-  coordinates: Coordinates
+    country: string
+    state: string
+    city: string
+    address: string
+    coordinates: Coordinates
 }
 const defaultLocationData: LocationUploadData = {
-  country: 'kenya',
-  state: '',
-  city: '',
-  address: '',
-  coordinates: { lat: 0, long: 0 }
+    country: 'kenya',
+    state: '',
+    city: '',
+    address: '',
+    coordinates: { lat: 0, long: 0 }
 }
 
 
@@ -182,7 +182,7 @@ const createNewRentalSession = (): OngoingCreate => {
     const sessionId = uuidv4()
     const now = new Date().toISOString()
 
-    const createSection = (defaultData:any=null): RentalSection => ({
+    const createSection = (defaultData: any = null): RentalSection => ({
         id: uuidv4(),
         data: defaultData,
         status: 'draft',
@@ -198,6 +198,31 @@ const createNewRentalSession = (): OngoingCreate => {
         amenities: createSection(),
         rules: createSection([]),
         files: [],
+        hasUnsavedChanges: false,
+        createdAt: now
+    }
+}
+
+
+const createEditRentalSession = (data: any): OngoingCreate => {
+    const now = new Date().toISOString()
+
+    const createSection = (defaultData: any = null): RentalSection => ({
+        id: uuidv4(),
+        data: defaultData,
+        status: 'draft',
+        lastUpdated: now
+    })
+
+    return {
+        id: data.id,
+        rentalId: data.public_id,
+        headInfo: createSection(data.head_info),
+        location: createSection(data.location_info),
+        price: createSection(data.pricing),
+        amenities: createSection(data.amenities),
+        rules: createSection(data.rules),
+        files: data.gallery || [],
         hasUnsavedChanges: false,
         createdAt: now
     }
@@ -591,7 +616,7 @@ export const useRentalStore = defineStore('rental', {
 
                 const response = await post(
                     endpoints.rental.updateRules(this.ongoingCreate.rentalId),
-                    this.ongoingCreate.rules.data,true
+                    this.ongoingCreate.rules.data, true
                 )
 
                 this.ongoingCreate.rules.status = 'synced'
@@ -804,6 +829,40 @@ export const useRentalStore = defineStore('rental', {
                 completionPercentage,
                 missingRequiredCount,
                 missingOptionalCount
+            }
+        },
+
+        async fetchRentalByIdForEdit(rentalId: string): Promise<ApiResponse> {
+            if (!rentalId) {
+                return {
+                    success: false,
+                    message: 'No rental ID provided'
+                }
+            }
+            try {
+                const { get } = useApi()
+                const endpoints = useEndpoints()
+
+                const response = await get(
+                    endpoints.rental.getByIdForEdit(rentalId), {}, true
+                )
+
+                if (response.success && response.data) {
+                    this.ongoingCreate = createEditRentalSession(response.data)
+                }
+
+                return {
+                    success: true,
+                    message: 'Rental fetched successfully',
+                    // data: response.data
+                }
+
+            } catch (error: any) {
+                return {
+                    success: false,
+                    message: 'Failed to fetch rental',
+                    errors: [error.message]
+                }
             }
         },
 

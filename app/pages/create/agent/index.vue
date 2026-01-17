@@ -2,6 +2,8 @@
 import type { StepperItem } from '@nuxt/ui'
 import HeaderInfo from '~/components/agents/HeaderInfo.vue'
 import AgentStepContact from '~/components/agents/AgentStepContact.vue'
+import AgentStepLocation from '~/components/agents/AgentStepLocation.vue'
+import AgentStepVerification from '~/components/agents/AgentStepVerification.vue'
 
 const route = useRoute()
 const { post } = useApi()
@@ -51,13 +53,13 @@ const items: StepperItem[] = [
     title: 'Location',
     description: 'Service area and address',
     icon: 'i-lucide-map-pin',
-    component: 'AgentStepLocation'
+    component: AgentStepLocation
   },
   {
     title: 'Verification',
     description: 'Identity and compliance checks',
     icon: 'i-lucide-shield-check',
-    component: 'AgentStepVerification'
+    component: AgentStepVerification
   },
   {
     title: 'Review & submit',

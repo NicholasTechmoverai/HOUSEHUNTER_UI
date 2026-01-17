@@ -22,6 +22,7 @@ export const useEndpoints = () => {
       addFavorite: (id: string) => `/user/${id}/favorites`,
       removeFavorite: (id: string, propertyId: string) =>
         `/user/${id}/favorites/${propertyId}`,
+      listings: (id: string) => `/user/${id}/listings`,
     },
 
     auth: {
@@ -44,6 +45,7 @@ export const useEndpoints = () => {
       listInteractive:'/rentals/intractive',
 
       getById: (id: string) => `/rental/${id}`,
+      getByIdForEdit: (id: string) => `/rental/${id}/for-edit`,
       getBySlug: (slug: string) => `/rental/slug/${slug}`,
 
       updateHeadInfo: (rentalId: string) => `/rental/${rentalId}/head-info`,

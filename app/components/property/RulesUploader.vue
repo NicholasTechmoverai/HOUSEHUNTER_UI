@@ -312,8 +312,8 @@ interface PropertyRule {
   title: string | null
   description: string | null
   is_mandatory: boolean
-  created_at: string
-  updated_at?: string
+  created_at: string | null
+  updated_at?: string | null
 }
 
 interface ModelValue {

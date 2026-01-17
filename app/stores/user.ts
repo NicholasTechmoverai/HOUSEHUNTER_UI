@@ -3,7 +3,8 @@ import { defineStore } from 'pinia'
 export const useUserStore = defineStore('user', {
   state: () => ({
     user: null as any,
-    userproile: null as any,
+    userprofile: null as any,
+    
     token: null as string | null,
     loading: false,
     breadCrumbItems: [],
@@ -33,6 +34,7 @@ export const useUserStore = defineStore('user', {
     setUser(user: any, token?: string) {
       this.user = user
       if (token) this.token = token
+      
     },
 
     clearUser() {
@@ -337,7 +339,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async fetch_user_profile() {
-    
+
       try {
         const { post } = useApi()
         const endpoints = useEndpoints()
@@ -347,31 +349,72 @@ export const useUserStore = defineStore('user', {
           {}, true
         )
 
-       if( response.success ){
-        this.userproile = response.data.userprofile
-         return {
-          success: true,
-          message: 'Location saved successfully',
-          data: response
+        if (response.success) {
+          this.userproile = response.data.userprofile
+          return {
+            success: true,
+            message: 'Location saved successfully',
+            data: response
+          }
+        } else {
+          return {
+            success: false,
+            message: 'Failed to fetch user profile',
+            errors: response.errors || []
+          }
         }
-       }else{
-        return {
-          success: false,
-          message: 'Failed to fetch user profile',
-          errors: response.errors || []
-        }
-       }
 
-       
+
 
       } catch (error: any) {
         return {
           success: false,
-          message: 'Failed to save location',
+          message: 'Failed to load profile',
           errors: [error.message]
         }
       } finally {
       }
+    },
+    async fetch_user_listings(id:string  | null = null) {
+      try {
+        const { post } = useApi()
+        const endpoints = useEndpoints()
+
+        const response = await post(
+          endpoints.user.listings(id?id :this.user.id ),
+          {}, true
+        )
+
+        if (response.success) {
+          this.userlistings = response.data.listings
+          return {
+            success: true,
+            message: 'listings loaded successfully',
+            data: response
+          }
+        } else {
+          return {
+            success: false,
+            message: 'Failed to fetch user listings',
+            errors: response.errors || []
+          }
+        }
+
+
+
+      } catch (error: any) {
+        return {
+          success: false,
+          message: 'Failed to load listings',
+          errors: [error.message]
+        }
+      } finally {
+      }
+
+    },
+
+    async fetch_user_notifications() {
+
     },
 
     init() {

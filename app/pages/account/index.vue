@@ -631,11 +631,15 @@ const countryCodes = ['+1', '+44', '+254', '+255', '+256']
 
 const userStore = useUserStore()
 
+onMounted(async () => {
 await useAsyncData('user_profile', () =>
   userStore.fetch_user_profile()
 )
 
-
+await useAsyncData('user_listings', () =>
+  userStore.fetch_user_listings()
+)
+})
 
 // Share Options
 const shareOptions = [[
