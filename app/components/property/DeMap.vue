@@ -403,7 +403,7 @@ defineExpose({
             </div>
 
             <!-- Map Container -->
-            <div class="w-full h-[85vh] relative">
+            <div class="w-full h-[75vh] relative">
                 <div v-if="!isReady" class="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-950">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 </div>
