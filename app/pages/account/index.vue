@@ -1,8 +1,7 @@
 <template>
   <div class="min-h-screen">
     <!-- Header - Always visible -->
-    <div
-      class=" top-0 z-50 backdrop-blur-md  border-b border-gray-200/50 dark:border-gray-800/50">
+    <div class=" top-0 z-50 backdrop-blur-md  border-b border-gray-200/50 dark:border-gray-800/50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4">
           <div class="flex items-start sm:items-center gap-3 sm:gap-4 w-full sm:flex-1 min-w-0">
@@ -42,8 +41,7 @@
                   <UIcon name="i-heroicons-at-symbol" class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
                   <div v-if="edit" class="flex items-center gap-1 sm:gap-2">
                     <UInput v-model="user.username" placeholder="username" size="xs" class="w-50 sm:w-40" />
-                    <UButton icon="i-heroicons-check" color="success" variant="ghost" size="md"
-                      @click="saveUsername" />
+                    <UButton icon="i-heroicons-check" color="success" variant="ghost" size="md" @click="saveUsername" />
                   </div>
                   <span v-else class="text-gray-600 dark:text-gray-300 truncate text-xs sm:text-sm">
                     {{ user?.username || 'username' }}
@@ -53,7 +51,7 @@
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-envelope" class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
                   <div v-if="edit" class="flex items-center gap-1 sm:gap-2">
-                    <UButton :label="`change email`" icon="i-lucide-lock" size="sm" variant="outline" color="neutral"/>
+                    <UButton :label="`change email`" icon="i-lucide-lock" size="sm" variant="outline" color="neutral" />
                   </div>
                   <div v-else class="flex items-center gap-1 sm:gap-2">
                     <span
@@ -185,7 +183,7 @@
 
             <div v-else class="space-y-4 w-full">
               <UTextarea v-model="user.bio" placeholder="Share something interesting about yourself..." autoresize
-                :rows="4" class="w-full"/>
+                :rows="4" class="w-full" />
               <div class="flex justify-end gap-3 ">
                 <UButton label="Cancel" variant="ghost" @click="cancelEdit" />
                 <UButton label="Save Bio" color="primary" @click="saveSection('bio')" />
@@ -331,7 +329,7 @@
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-cake" class="w-4 h-4 text-gray-400" />
                   <p v-if="user?.date_of_birth" class="text-gray-900 dark:text-white">{{ formatDate(user.date_of_birth)
-                    }}</p>
+                  }}</p>
                   <p v-else class="text-gray-500 dark:text-gray-400 italic">Not set yet</p>
                 </div>
               </div>
@@ -433,56 +431,114 @@
 
     <!-- Profile Picture Modal -->
     <UModal v-model:open="showProfileModal" :ui="{ container: 'items-center justify-center px-4' }">
-      <template #content >
+      <template #content>
 
-      <UCard :ui="{
-        base: 'relative overflow-hidden w-full max-w-md',
-        ring: 'ring-0',
-        rounded: 'rounded-2xl',
-        shadow: 'shadow-2xl'
-      }">
+        <UCard :ui="{
+          base: 'relative overflow-hidden w-full max-w-md',
+          ring: 'ring-0',
+          rounded: 'rounded-2xl',
+          shadow: 'shadow-2xl'
+        }">
 
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Update Profile Picture</h3>
-            <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" @click="showProfileModal = false" />
-          </div>
-        </template>
-
-        <div class="flex flex-col items-center space-y-6">
-          <div class="relative">
-            <div class="w-40 h-40 rounded-2xl overflow-hidden shadow-lg ring-2 ring-white dark:ring-gray-800">
-              <img :src="profilePreview || user?.profile_picture" alt="Preview" class="w-full h-full object-cover" />
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Update Profile Picture</h3>
+              <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" @click="showProfileModal = false" />
             </div>
-            <div class="absolute -bottom-3 -right-3">
-              <label class="cursor-pointer">
-                <div
-                  class="p-3 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors">
-                  <UIcon name="i-heroicons-camera" class="w-5 h-5" />
-                </div>
-                <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
-              </label>
+          </template>
+
+          <div class="flex flex-col items-center space-y-6">
+            <div class="relative">
+              <div class="w-40 h-40 rounded-2xl overflow-hidden shadow-lg ring-2 ring-white dark:ring-gray-800">
+                <img :src="profilePreview || user?.profile_picture" alt="Preview" class="w-full h-full object-cover" />
+              </div>
+              <div class="absolute -bottom-3 -right-3">
+                <label class="cursor-pointer">
+                  <div
+                    class="p-3 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors">
+                    <UIcon name="i-heroicons-camera" class="w-5 h-5" />
+                  </div>
+                  <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+                </label>
+              </div>
+            </div>
+
+            <div class="flex gap-3 flex-wrap justify-center">
+              <UButton icon="i-heroicons-photo" @click="triggerFileInput">
+                Choose Photo
+              </UButton>
+              <UButton icon="i-heroicons-trash" color="red" variant="outline" :disabled="!user?.profile_picture"
+                @click="removeProfilePicture">
+                Remove
+              </UButton>
             </div>
           </div>
-
-          <div class="flex gap-3 flex-wrap justify-center">
-            <UButton icon="i-heroicons-photo" @click="triggerFileInput">
-              Choose Photo
-            </UButton>
-            <UButton icon="i-heroicons-trash" color="red" variant="outline" :disabled="!user?.profile_picture"
-              @click="removeProfilePicture">
-              Remove
-            </UButton>
-          </div>
-        </div>
-      </UCard>
+        </UCard>
       </template>
     </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { User } from '~/types/user'
+interface LocationData {
+  country: string
+  county: string
+  state?: string
+  city: string
+  address: string
+  coordinates?: {
+    lat: number
+    long: number
+  }
+}
+
+interface Account {
+  id: string
+  name: string
+  verified: boolean
+  status: string
+}
+
+interface UserAccount {
+  currentAccount: string
+  availableAccounts: Account[]
+}
+interface Email {
+  email: string
+  email_verified: boolean
+}
+
+interface Phone {
+  phone_country_code: string
+  phone_number: string
+  phone_verified: boolean
+}
+interface User {
+  account: UserAccount
+  name: string
+  profile_picture: string
+  userName: string
+  publicId: string
+  email: Email
+  phone_number: Phone
+  location: LocationData
+  currency: string
+  locale: string
+  bio: string
+  occupation: string
+  company: string
+  job_title: string
+  industry: string
+  website: string
+  status: 'active' | 'inactive' | 'pending' | 'verified' | 'premium'
+  date_of_birth: string
+  gender: string
+  created_at: string
+  last_active: string
+  verification_level: 'basic' | 'verified' | 'premium'
+}
+
+const userStore = useUserStore()
 
 const user = ref<User | null>(null)
 const edit = ref(false)
@@ -495,56 +551,23 @@ const focusPhoneField = ref(false)
 const showProfessionalForm = ref(false)
 const showLocationForm = ref(false)
 
-// Load user data
-onMounted(() => {
-  user.value = {
-    id: "ad623fd0-a314-4712-bc7c-401a4fa85d8e",
-    public_id: "USR-VML97Y6S",
-    name: "TechMovers techmovers",
-    profile_picture: "https://lh3.googleusercontent.com/a/ACg8ocLGMH4KwkeRGMLSf4AwEYKTR-fgu3d0sD3jNCon-mI2duhSSHU=s96-c",
-    profile_picture_thumbnail: "https://lh3.googleusercontent.com/a/ACg8ocLGMH4KwkeRGMLSf4AwEYKTR-fgu3d0sD3jNCon-mI2duhSSHU=s96-c",
-    email: {
-      email: "techmoversai@gmail.com",
-      email_verified: true
-    },
-    username: "techmoverstechmovers",
-    display_name: "TechMovers techmovers",
-    date_of_birth: null,
-    gender: null,
-    phone_number: {
-      country_code: "+254",
-      number: null,
-      phone_verified: false
-    },
-    bio: null,
-    website: null,
-    tagline: null,
-    occupation: null,
-    current_city: null,
-    current_country: null,
-    company: null,
-    job_title: null,
-    industry: null,
-    location: {
-      city: null,
-      country: null,
-      address: null,
-      county: null,
-      coordinates: {
-        lat: null,
-        long: null
-      }
-    },
-    status: "ACTIVE",
-    account: {
-      currentAccount: "PERSONAL",
-      availableAccounts: []
-    },
-    last_active: null,
-    currency: "KES",
-    locale: "en-KE",
-    created_at: "2026-01-09T15:42:27.728218+00:00"
-  }
+const storeUser = computed(() => userStore.userprofile)
+
+watch(
+  () => userStore.userprofile,
+  (val) => {
+    user.value = val ? { ...toRaw(val) } : null
+  },
+  { immediate: true }
+)
+
+onMounted(async () => {
+  userStore.fetch_user_profile()
+
+
+  await useAsyncData('user_listings', () =>
+    userStore.fetch_user_listings()
+  )
 })
 
 // Computed properties
@@ -670,7 +693,7 @@ const saveSection = async (section: string) => {
 
 const saveAll = async () => {
   saving.value = true
-  await new Promise(resolve => setTimeout(resolve, 800))
+  await userStore.update_user_profile(user.value)
 
   edit.value = false
   editingSection.value = null
@@ -683,12 +706,12 @@ const saveAll = async () => {
     title: 'Profile updated successfully',
     description: 'All changes have been saved',
     icon: 'i-heroicons-check-badge',
-    color: 'emerald'
+    color: 'primary'
   })
 }
 
 const shareProfile = async () => {
-  const link = `${window.location.origin}/user/${user.value?.username}`
+  const link = `${window.location.origin}/account/${user.value?.public_id}`
   await navigator.clipboard.writeText(link)
   useToast().add({
     title: 'Profile link copied',
@@ -699,17 +722,17 @@ const shareProfile = async () => {
 
 const copyUserId = async () => {
   if (user.value?.public_id) {
-    await navigator.clipboard.writeText(user.value.public_id)
+    await navigator.clipboard.writeText(`${window.location.origin}/account/${user.value?.public_id}`)
     useToast().add({
-      title: 'User ID copied',
+      title: 'Profile link copied',
       icon: 'i-heroicons-clipboard-document-check',
-      color: 'emerald'
+      color: 'success'
     })
   }
 }
 
 const copyProfileLink = async () => {
-  const link = `${window.location.origin}/user/${user.value?.username}`
+  const link = `${window.location.origin}/account/${user.value?.public_id}`
   await navigator.clipboard.writeText(link)
   useToast().add({
     title: 'Profile link copied',
@@ -789,4 +812,5 @@ const formatDate = (dateString: string | null) => {
     day: 'numeric'
   })
 }
+
 </script>
