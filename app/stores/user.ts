@@ -48,6 +48,8 @@ export const useUserStore = defineStore('user', {
       this.clearUser()
       authStore.clearPendingActions()
       authStore.clearLastAttemptedRoute()
+      this.userprofile = null
+      return true
     },
 
     async login(credentials: { email: string; password: string; remember_me?: boolean }) {

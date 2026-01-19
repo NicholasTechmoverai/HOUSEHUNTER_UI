@@ -5,8 +5,9 @@
 
       <template #content>
         <div class="flex flex-col gap-2 p-2 min-w-[200px]">
-          <UButton icon="i-lucide-user" variant="outline" @click="$router.push('/account')" :label="userStore.user?.display_name" />
-          <UButton icon="i-lucide-log-out" color="error" variant="outline" @click="userStore.logout()" label="Logout" />
+          <UButton icon="i-lucide-user" variant="outline" @click="$router.push('/account')"
+            :label="userStore.user?.display_name" />
+          <UButton icon="i-lucide-log-out" color="error" variant="outline" @click="logout" label="Logout" />
         </div>
       </template>
     </UPopover>
@@ -33,5 +34,17 @@ const authStore = useAuthStore()
 const login = async () => {
   authStore.setLastAttemptedRouteToCurrent()
   await authStore.handleGoogleLogin()
+}
+
+const logout = () => {
+  const res = userStore.logout()
+  if (res) {
+    useToast().add({
+      title: "Signed out!",
+      description: "You can log in anytime.",
+      icon: "i-lucide-log-out",
+      color: 'info'
+    })
+  }
 }
 </script>
