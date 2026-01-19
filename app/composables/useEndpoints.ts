@@ -31,7 +31,7 @@ export const useEndpoints = () => {
       facebookLogin: `${apiBase}/api/v1/auth/facebook_login`,
       sendVerificationCode: '/auth/verification/send-code',
       verifyCode: '/auth/verification/verify-code',
-      renewToken: '/auth/verification/new-token',
+      renewToken:(id:string) => `/auth/${id}/new-token`,
       requestPasswordReset: '/auth/password/request-reset',
       resetPassword: '/auth/password/reset',
       changePassword: '/auth/password/change',

@@ -62,7 +62,7 @@ export const useUserStore = defineStore('user', {
         const response = await post(endpoints.user.login, credentials)
 
         if (response.success) {
-          this.setUser(response.user, response.token)
+          this.setUser(response.user, response.access_token)
 
           if (!response.user?.email_verified) {
             authStore.setVerificationInfo({
@@ -142,7 +142,7 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await post(endpoints.user.register, payload)
         if (response.success) {
-          this.setUser(response.user, response.token)
+          this.setUser(response.user, response.access_token)
           authStore.setVerificationInfo({
             identifier: payload.email,
             type: 'email',
@@ -381,7 +381,7 @@ export const useUserStore = defineStore('user', {
         const endpoints = useEndpoints()
 
         const response = await post(
-          endpoints.user.listings(id?id :this.user.id ),
+          endpoints.user.listings(id?id :this.user.public_id ),
           {}, true
         )
 
@@ -420,6 +420,9 @@ export const useUserStore = defineStore('user', {
     init() {
       if (!this.user) {
         useGoogleOneTap()
+      }
+      if(this.token){
+        this.renewT
       }
     },
 

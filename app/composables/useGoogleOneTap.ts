@@ -33,7 +33,7 @@ const handleCredential = async (response: { credential: string }) => {
 
         if (result.success) {
             const userStore = useUserStore()
-            userStore.setUser(result.data.user, result.data.token)
+            userStore.setUser(result.data.user, result.data.access_token)
         } else {
             console.error('Login failed:', result.message)
         }

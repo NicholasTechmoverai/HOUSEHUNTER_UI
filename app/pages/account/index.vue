@@ -631,14 +631,24 @@ const countryCodes = ['+1', '+44', '+254', '+255', '+256']
 
 const userStore = useUserStore()
 
-onMounted(async () => {
-await useAsyncData('user_profile', () =>
-  userStore.fetch_user_profile()
-)
+onMounted(() => {
+  // wait until user is authenticated / store is ready
+  if (userStore.isAuthenticated) {
+    userStore.fetch_user_profile()
+    userStore.fetch_user_listings()
+  }
 
-await useAsyncData('user_listings', () =>
-  userStore.fetch_user_listings()
-)
+  // optional: watch for when the user becomes authenticated later
+  watch(
+    () => userStore.isAuthenticated,
+    (isAuth) => {
+      if (isAuth) {
+        userStore.fetch_user_profile()
+        userStore.fetch_user_listings()
+      }
+    },
+    { immediate: false } // don't trigger immediately; only when auth changes
+  )
 })
 
 // Share Options

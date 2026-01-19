@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 interface VerificationInfo {
   identifier: string
@@ -26,7 +27,8 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null as any,
     verificationRequiredFor: [] as string[],
-    lastAttemptedRoute: null as any
+    lastAttemptedRoute: null as any,
+    refreshing: false
   }),
 
   getters: {
@@ -340,6 +342,66 @@ export const useAuthStore = defineStore('auth', {
 
       //  
     },
+
+async refreshToken() {
+  const userStore = useUserStore()
+  
+  if (!userStore.token) {
+    this.stopAutoRefresh()
+    return
+  }
+  
+  if (this.refreshing) {
+    return Promise.resolve() // Return resolved promise
+  }
+  
+  this.refreshing = true
+  
+  try {
+    const { post } = useApi()
+    const endpoints = useEndpoints()
+    
+    const response = await post(endpoints.auth.renewToken(userStore.user.public_id), {}, true)
+    
+    if (response.success) {
+      userStore.setUser(response.user, response.access_token)
+      return true
+    } else {
+      return false
+    }
+  } catch (error) {
+    console.error('Refresh error:', error)
+    if (error.response?.status === 401) {
+      this.stopAutoRefresh()
+    }
+    return false
+  } finally {
+    this.refreshing = false
+  }
+},
+startAutoRefresh() {
+  const userStore = useUserStore()
+  
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
+  
+  if (!userStore.isAuthenticated) {
+    return
+  }
+    
+  refreshTimer = setInterval(() => {
+    this.refreshToken() 
+  }, 20 * 60 * 1000) // 20 minutes for testing
+  
+},
+    stopAutoRefresh() {
+      if (!refreshTimer) return
+      clearInterval(refreshTimer)
+      refreshTimer = null
+    },
+
 
     clearAll() {
       this.clearVerificationInfo()
