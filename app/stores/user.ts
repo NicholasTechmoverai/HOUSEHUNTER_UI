@@ -350,7 +350,8 @@ export const useUserStore = defineStore('user', {
         )
 
         if (response.success) {
-          this.userproile = response.data.userprofile
+          this.userprofile = response.data
+          console.log("received user",response.data)
           return {
             success: true,
             message: 'Location saved successfully',
@@ -363,8 +364,6 @@ export const useUserStore = defineStore('user', {
             errors: response.errors || []
           }
         }
-
-
 
       } catch (error: any) {
         return {

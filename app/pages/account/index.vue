@@ -1,753 +1,755 @@
 <template>
-  <div class="min-h-screen ">
-    <div class="sticky top-0 z-20 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
-      <div class="container mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="relative group">
-              <UAvatar :src="user.profile_picture" :alt="user.name" size="lg"
-                class="ring-2 ring-gray-200 dark:ring-gray-700 cursor-pointer" @click="openProfileUpload" />
+  <div class="min-h-screen">
+    <!-- Header - Always visible -->
+    <div
+      class=" top-0 z-50 backdrop-blur-md  border-b border-gray-200/50 dark:border-gray-800/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4">
+          <div class="flex items-start sm:items-center gap-3 sm:gap-4 w-full sm:flex-1 min-w-0">
+            <div class="relative shrink-0">
+              <UAvatar :src="user?.profile_picture" :alt="user?.name" size="3xl"
+                class="ring-2 ring-white dark:ring-gray-800 shadow-lg cursor-pointer transition-transform hover:scale-105 w-16 h-16 sm:w-20 sm:h-20"
+                @click="edit && openProfileUpload" />
               <div v-if="edit"
-                class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer backdrop-blur-sm"
                 @click="openProfileUpload">
-                <UIcon name="i-heroicons-camera" class="w-5 h-5 text-white" />
+                <UIcon name="i-heroicons-camera" class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
             </div>
 
-            <div>
-              <div class="flex items-center gap-2">
-                <!-- Name (editable when in edit mode) -->
-                <div v-if="edit" class="flex items-center gap-2">
-                  <UInput v-model="user.name" placeholder="Your name" size="sm" class="w-48" />
-                  <UButton icon="i-heroicons-check" color="green" variant="ghost" size="xs" @click="saveName" />
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                <div v-if="edit" class="flex items-center gap-2 sm:gap-3 w-full">
+                  <UInput v-model="user.display_name" placeholder="Your display name"
+                    class="flex-1 min-w-0 text-lg sm:text-2xl" :ui="{ wrapper: 'w-full', base: 'font-bold' }" />
+                  <UButton icon="i-heroicons-check" color="emerald" variant="ghost" size="xs sm:sm"
+                    @click="saveDisplayName" />
                 </div>
-                <h1 v-else class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {{ user.name }}
+                <h1 v-else class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  {{ user?.display_name || 'Your Name' }}
                 </h1>
 
-                <UBadge :label="user.account.currentAccount" color="primary" variant="subtle" size="xs" />
+                <div class="flex flex-wrap gap-2">
+                  <UBadge v-if="user?.status" :label="user.status" :color="getStatusColor(user.status)" variant="soft"
+                    size="xs" />
+                  <UBadge v-if="user?.account?.currentAccount" :label="user.account.currentAccount" color="primary"
+                    variant="soft" size="xs" />
+                </div>
               </div>
 
-              <!-- Username and Public ID -->
-              <div class="flex items-center gap-2 mt-1">
-                <!-- Username (editable when in edit mode) -->
-                <div v-if="edit" class="flex items-center gap-1">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">@</span>
-                  <UInput v-model="user.userName" placeholder="username" size="xs" class="w-32" />
-                  <UButton icon="i-heroicons-check" color="green" variant="ghost" size="2xs" @click="saveUsername" />
-                </div>
-                <p v-else class="text-sm text-gray-600 dark:text-gray-400">@{{ user.userName }}</p>
-
-                <span class="text-gray-400">•</span>
-
-                <!-- Public ID with Copy -->
-                <div class="flex items-center gap-1">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">ID:</span>
-                  <code
-                    class="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
-                    {{ user.publicId }}
-                  </code>
-                  <UButton icon="i-heroicons-document-duplicate" color="gray" variant="ghost" size="2xs"
-                    @click="copyPublicId" />
+              <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-2 sm:gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-at-symbol" class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                  <div v-if="edit" class="flex items-center gap-1 sm:gap-2">
+                    <UInput v-model="user.username" placeholder="username" size="xs" class="w-50 sm:w-40" />
+                    <UButton icon="i-heroicons-check" color="success" variant="ghost" size="md"
+                      @click="saveUsername" />
+                  </div>
+                  <span v-else class="text-gray-600 dark:text-gray-300 truncate text-xs sm:text-sm">
+                    {{ user?.username || 'username' }}
+                  </span>
                 </div>
 
-                <!-- Share Profile -->
-                <UDropdown :items="shareOptions" :popper="{ placement: 'bottom-start' }">
-                  <UButton icon="i-heroicons-share" color="gray" variant="ghost" size="2xs" label="Share"
-                    class="hidden sm:inline-flex" />
-                  <UButton icon="i-heroicons-share" color="gray" variant="ghost" size="2xs" class="sm:hidden" />
-                </UDropdown>
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-envelope" class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                  <div v-if="edit" class="flex items-center gap-1 sm:gap-2">
+                    <UButton :label="`change email`" icon="i-lucide-lock" size="sm" variant="outline" color="neutral"/>
+                  </div>
+                  <div v-else class="flex items-center gap-1 sm:gap-2">
+                    <span
+                      class="text-gray-600 dark:text-gray-300 truncate max-w-[120px] sm:max-w-[180px] text-xs sm:text-sm">
+                      {{ user?.email?.email }}
+                    </span>
+                    <UBadge v-if="user?.email?.email_verified" label="✓" color="primary" variant="soft" size="xs" />
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-finger-print" class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                  <code class="text-xs font-mono text-gray-700 dark:text-gray-300 truncate max-w-[100px] sm:max-w-none">
+                {{ user?.public_id }}
+              </code>
+                  <UButton icon="i-heroicons-clipboard-document" color="neutral" variant="ghost" size="md"
+                    @click="copyUserId" />
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <UButton icon="i-heroicons-bell" color="neutral" variant="ghost" size="sm" :badge="unreadNotifications"
-              :ui="{ badge: { color: 'primary' } }" />
+          <div class="flex items-center justify-end sm:justify-start gap-2 sm:gap-3 w-full sm:w-auto">
+            <UButton icon="i-heroicons-share" color="gray" variant="ghost" size="xs sm:sm"
+              :label="useScreenSize().isDesktop ? 'Share' : undefined" @click="shareProfile" />
 
-            <UDropdownMenu v-if="user.account.availableAccounts.length > 1" :items="accountDropdownItems"
-              :popper="{ placement: 'bottom-end' }">
-              <UButton icon="i-heroicons-switch-horizontal" color="neutral" variant="ghost" size="sm"
-                class="hidden sm:flex" trailing-icon="i-heroicons-chevron-down">
-                Switch
-              </UButton>
-              <UButton icon="i-heroicons-switch-horizontal" color="gray" variant="ghost" size="sm" class="sm:hidden" />
-            </UDropdownMenu>
-
-            <!-- Edit/Save Toggle -->
-            <UButton :icon="edit ? 'i-heroicons-check' : 'i-heroicons-pencil-square'" :color="edit ? 'primary' : 'gray'"
-              variant="ghost" size="sm" :label="edit ? 'Save' : 'Edit'" class="hidden sm:inline-flex"
-              @click="toggleEdit" />
-            <UButton :icon="edit ? 'i-heroicons-check' : 'i-heroicons-pencil-square'" :color="edit ? 'primary' : 'gray'"
-              variant="ghost" size="sm" class="sm:hidden" @click="toggleEdit" />
+            <UButton :icon="edit ? 'i-heroicons-check-circle' : 'i-heroicons-pencil-square'"
+              :color="edit ? 'netral' : 'primary'" :variant="edit ? 'solid' : 'ghost'" size="xs"
+              :label="useScreenSize().isDesktop ? (edit ? 'Done' : 'Edit') : undefined" @click="toggleEdit" />
           </div>
         </div>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6">
-      <div class="max-w-6xl mx-auto">
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
-
-          <UPageCard spotlight>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</p>
-            <div class="flex items-center gap-2">
-              <UBadge :label="user.status" :color="getStatusColor(user.status)" size="sm" />
-            </div>
-          </UPageCard>
-
-
-          <UPageCard spotlight>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member Since</p>
-            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 ">
-              {{ formatDate(user.created_at, 'short') }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Stats Grid - Responsive -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+        <UPageCard spotlight class="h-full">
+          <div class="text-center p-3">
+            <UIcon name="i-heroicons-calendar" class="w-7 h-7 text-primary-500 mx-auto mb-2" />
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Member Since</p>
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ user?.created_at ? formatDate(user.created_at) : 'Join now!' }}
             </p>
-          </UPageCard>
+          </div>
+        </UPageCard>
 
-          <UPageCard spotlight>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Properties</p>
-            <p class="text-lg font-semibold text-gray-900 dark:text-gray-100 ">
-              {{ userStats.properties }}
+        <UPageCard spotlight class="h-full">
+          <div class="text-center p-3">
+            <UIcon name="i-heroicons-clock" class="w-7 h-7 text-blue-500 mx-auto mb-2" />
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Last Active</p>
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ user?.last_active ? 'Recent' : 'Just now!' }}
             </p>
-          </UPageCard>
+          </div>
+        </UPageCard>
 
-          <UPageCard spotlight>
-
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ratings</p>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-500 fill-current" />
-              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {{ userStats.rating }}
-              </span>
-              <span class="text-xs text-gray-500 dark:text-gray-400">
-                ({{ userStats.reviews }} reviews)
-              </span>
+        <UPageCard spotlight class="h-full">
+          <div class="text-center p-3">
+            <UIcon name="i-heroicons-globe-alt" class="w-7 h-7 text-emerald-500 mx-auto mb-2" />
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Locale</p>
+            <div v-if="edit" class="mt-2">
+              <USelect v-model="user.locale" :options="['en-KE', 'en-US', 'en-GB', 'sw-KE']" size="xs"
+                class="text-sm" />
             </div>
-          </UPageCard>
+            <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ user?.locale || 'Set your locale' }}
+            </p>
+          </div>
+        </UPageCard>
 
+        <UPageCard spotlight class="h-full">
+          <div class="text-center p-3">
+            <UIcon name="i-heroicons-currency-dollar" class="w-7 h-7 text-amber-500 mx-auto mb-2" />
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Currency</p>
+            <div v-if="edit" class="mt-2">
+              <USelect v-model="user.currency" :options="['KES', 'USD', 'EUR', 'GBP']" size="xs" class="text-sm" />
+            </div>
+            <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ user?.currency || 'Set currency' }}
+            </p>
+          </div>
+        </UPageCard>
+
+        <UPageCard spotlight class="h-full">
+          <div class="text-center p-3">
+            <UIcon name="i-heroicons-user-group" class="w-7 h-7 text-purple-500 mx-auto mb-2" />
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Account Type</p>
+            <p class="text-base font-semibold text-gray-900 dark:text-white">
+              {{ user?.account?.currentAccount }}
+            </p>
+          </div>
+        </UPageCard>
+      </div>
+
+      <!-- Profile Sections -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 space-y-8">
+          <!-- Bio Section -->
           <UPageCard spotlight>
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Response Rate</p>
-            <div class="flex items-center gap-2 mt-2">
-              <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div class="h-full bg-green-500 rounded-full" :style="{ width: `${userStats.responseRate}%` }" />
+            <template #header>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <UIcon name="i-heroicons-user-circle" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-white">About You</h2>
+                </div>
+                <UButton v-if="!edit" icon="i-heroicons-pencil" color="gray" variant="ghost" size="sm"
+                  @click="startEdit('bio')" />
               </div>
-              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {{ userStats.responseRate }}%
-              </span>
+            </template>
+
+            <div v-if="!edit || editingSection !== 'bio'">
+              <p v-if="user?.bio" class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                {{ user.bio }}
+              </p>
+              <div v-else class="text-center py-8">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p class="text-gray-500 dark:text-gray-400 mb-3">Your bio is empty</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">Tell others about yourself to make your profile
+                  stand out
+                </p>
+                <UButton icon="i-heroicons-plus" color="primary" variant="ghost" @click="startEdit('bio')">
+                  Add Bio
+                </UButton>
+              </div>
+            </div>
+
+            <div v-else class="space-y-4 w-full">
+              <UTextarea v-model="user.bio" placeholder="Share something interesting about yourself..." autoresize
+                :rows="4" class="w-full"/>
+              <div class="flex justify-end gap-3 ">
+                <UButton label="Cancel" variant="ghost" @click="cancelEdit" />
+                <UButton label="Save Bio" color="primary" @click="saveSection('bio')" />
+              </div>
+            </div>
+          </UPageCard>
+
+          <!-- Contact & Professional -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Contact -->
+            <UPageCard spotlight>
+              <template #header>
+                <div class="flex items-center gap-3">
+                  <UIcon name="i-heroicons-phone" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Contact</h2>
+                </div>
+              </template>
+
+              <div class="space-y-6">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</p>
+                    <UBadge v-if="user?.phone_number?.phone_verified" label="Verified" color="emerald" variant="soft"
+                      size="xs" />
+                  </div>
+                  <div v-if="user?.phone_number?.number" class="flex items-center gap-2">
+                    <UIcon name="i-heroicons-device-phone-mobile" class="w-4 h-4 text-gray-400" />
+                    <p class="text-gray-900 dark:text-white">{{ user.phone_number.country_code }} {{
+                      user.phone_number.number }}
+                    </p>
+                  </div>
+                  <div v-else
+                    class="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                    <UIcon name="i-heroicons-phone" class="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                    <p class="text-gray-500 dark:text-gray-400 mb-2">No phone number added</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">Add your phone for better security</p>
+                    <UButton v-if="edit" icon="i-heroicons-plus" color="primary" variant="ghost" size="sm"
+                      @click="focusPhoneField = true">
+                      Add Phone
+                    </UButton>
+                  </div>
+                </div>
+
+                <div v-if="edit || focusPhoneField"
+                  class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                  <div class="flex gap-3">
+                    <USelect v-model="user.phone_number.country_code" :options="['+254', '+1', '+44', '+255']"
+                      placeholder="Code" size="sm" class="w-24" />
+                    <UInput v-model="user.phone_number.number" placeholder="Phone number" size="sm" class="flex-1" />
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <UCheckbox v-model="user.phone_number.phone_verified" />
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Mark as verified</span>
+                  </div>
+                </div>
+              </div>
+            </UPageCard>
+
+            <!-- Professional -->
+            <UPageCard spotlight>
+              <template #header>
+                <div class="flex items-center gap-3">
+                  <UIcon name="i-heroicons-briefcase" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Professional</h2>
+                </div>
+              </template>
+
+              <div v-if="hasProfessionalInfo" class="space-y-5">
+                <div v-for="field in professionalFields" :key="field.key">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ field.label }}</p>
+                  <p v-if="field.value" class="text-gray-900 dark:text-white">{{ field.value }}</p>
+                  <p v-else class="text-gray-500 dark:text-gray-400 italic text-sm">Not specified</p>
+                </div>
+              </div>
+              <div v-else class="text-center py-8">
+                <UIcon name="i-heroicons-briefcase" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p class="text-gray-500 dark:text-gray-400 mb-3">No professional info</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">Complete your professional profile</p>
+                <UButton v-if="edit" icon="i-heroicons-plus" color="primary" variant="ghost"
+                  @click="showProfessionalForm = true">
+                  Add Info
+                </UButton>
+              </div>
+
+              <div v-if="edit || showProfessionalForm"
+                class="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                <UInput v-model="user.occupation" label="Occupation" placeholder="e.g., Software Engineer" size="sm" />
+                <UInput v-model="user.company" label="Company" placeholder="Company name" size="sm" />
+                <UInput v-model="user.website" label="Website" placeholder="https://example.com" size="sm" />
+              </div>
+            </UPageCard>
+          </div>
+
+          <!-- Location -->
+          <UPageCard spotlight>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <UIcon name="i-heroicons-map-pin" class="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Location</h2>
+              </div>
+            </template>
+
+            <div v-if="hasLocationInfo" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div v-for="field in locationFields" :key="field.key">
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ field.label }}</p>
+                <p v-if="field.value" class="text-gray-900 dark:text-white">{{ field.value }}</p>
+                <p v-else class="text-gray-500 dark:text-gray-400 italic text-sm">Not specified</p>
+              </div>
+            </div>
+            <div v-else class="text-center py-8">
+              <UIcon name="i-heroicons-map" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p class="text-gray-500 dark:text-gray-400 mb-3">No location info</p>
+              <p class="text-sm text-gray-400 dark:text-gray-500 mb-4">Add your location for better recommendations</p>
+              <UButton v-if="edit" icon="i-heroicons-plus" color="primary" variant="ghost"
+                @click="showLocationForm = true">
+                Add Location
+              </UButton>
+            </div>
+
+            <div v-if="edit || showLocationForm"
+              class="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+              <UInput v-model="user.location.city" label="City" placeholder="e.g., Nairobi" size="sm" />
+              <UInput v-model="user.location.country" label="Country" placeholder="e.g., Kenya" size="sm" />
+              <UInput v-model="user.location.address" label="Address" placeholder="Full address" size="sm" />
             </div>
           </UPageCard>
         </div>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Left Column (2/3) -->
-          <div class="lg:col-span-2 space-y-6">
-            <!-- Bio Section -->
-            <ProfileSection title="Bio" icon="i-heroicons-user" :is-editing="editingSection === 'bio' || edit"
-              @edit="editingSection = 'bio'" @save="saveSection('bio')" @cancel="editingSection = null">
-              <template #default>
-                <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-line">
-                  {{ user.bio || 'No bio added yet. Tell others about yourself.' }}
-                </p>
-              </template>
-              <template #editing>
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">About you</label>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ user.bio?.length || 0 }}/500</span>
-                  </div>
-                  <UTextarea v-model="user.bio" autoresize :rows="3" placeholder="Tell us about yourself..."
-                    class="w-full text-sm" />
+        <!-- Right Column -->
+        <div class="space-y-8">
+          <!-- Personal Details -->
+          <UPageCard spotlight>
+            <template #header>
+              <div class="flex items-center gap-3">
+                <UIcon name="i-heroicons-user" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Personal Details</h2>
+              </div>
+            </template>
+
+            <div class="space-y-6">
+              <div>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</p>
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-cake" class="w-4 h-4 text-gray-400" />
+                  <p v-if="user?.date_of_birth" class="text-gray-900 dark:text-white">{{ formatDate(user.date_of_birth)
+                    }}</p>
+                  <p v-else class="text-gray-500 dark:text-gray-400 italic">Not set yet</p>
                 </div>
-              </template>
-            </ProfileSection>
+              </div>
 
-            <!-- Contact & Professional -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ProfileSection title="Contact" icon="i-heroicons-envelope"
-                :is-editing="editingSection === 'contact' || edit" @edit="editingSection = 'contact'"
-                @save="saveSection('contact')" @cancel="editingSection = null">
-                <template #default>
-                  <div class="space-y-4">
-                    <div>
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Email</label>
-                      <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.email.email }}</p>
-                        <UBadge :label="user.email.email_verified ? 'Verified' : 'Unverified'"
-                          :color="user.email.email_verified ? 'success' : 'warning'" variant="subtle" size="xs" />
-                      </div>
-                    </div>
-
-                    <div v-if="user.phone_number.phone_number">
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Phone</label>
-                      <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {{ user.phone_number.phone_country_code }} {{ user.phone_number.phone_number }}
-                        </p>
-                        <UBadge :label="user.phone_number.phone_verified ? 'Verified' : 'Unverified'"
-                          :color="user.phone_number.phone_verified ? 'success' : 'warning'" variant="subtle" size="xs" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-                <template #editing>
-                  <div class="space-y-4">
-                    <UInput v-model="user.email.email" label="Email" placeholder="your@email.com" type="email"
-                      size="sm" />
-                    <div class="flex items-center gap-2">
-                      <UCheckbox v-model="user.email.email_verified" size="xs" />
-                      <span class="text-xs text-gray-600 dark:text-gray-400">Mark as verified</span>
-                    </div>
-
-                    <div class="flex gap-2">
-                      <USelect v-model="user.phone_number.phone_country_code" label="Phone Code" :options="countryCodes"
-                        size="sm" class="w-28" />
-                      <UInput v-model="user.phone_number.phone_number" label="Phone Number" placeholder="123456789"
-                        type="tel" size="sm" class="flex-1" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <UCheckbox v-model="user.phone_number.phone_verified" size="xs" />
-                      <span class="text-xs text-gray-600 dark:text-gray-400">Mark as verified</span>
-                    </div>
-                  </div>
-                </template>
-              </ProfileSection>
-
-              <ProfileSection title="Professional" icon="i-heroicons-briefcase"
-                :is-editing="editingSection === 'professional' || edit" @edit="editingSection = 'professional'"
-                @save="saveSection('professional')" @cancel="editingSection = null">
-                <template #default>
-                  <div class="space-y-3">
-                    <div v-for="(value, key) in professionalFields" :key="key">
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 capitalize">{{ key.replace('_',
-                        ' ') }}</label>
-                      <p v-if="value" class="text-sm text-gray-900 dark:text-gray-100 mt-0.5">{{ value }}</p>
-                      <p v-else class="text-sm text-gray-500 dark:text-gray-400 italic mt-0.5">Not specified</p>
-                    </div>
-                  </div>
-                </template>
-                <template #editing>
-                  <div class="space-y-3">
-                    <UInput v-model="user.occupation" label="Occupation" placeholder="Your occupation" size="sm" />
-                    <UInput v-model="user.company" label="Company" placeholder="Company name" size="sm" />
-                    <UInput v-model="user.job_title" label="Job Title" placeholder="Your title" size="sm" />
-                    <UInput v-model="user.industry" label="Industry" placeholder="Industry" size="sm" />
-                    <UInput v-model="user.website" label="Website" placeholder="https://example.com" type="url"
-                      size="sm" />
-                  </div>
-                </template>
-              </ProfileSection>
-            </div>
-
-            <!-- Location Section -->
-            <ProfileSection title="Location" icon="i-heroicons-map-pin"
-              :is-editing="editingSection === 'location' || edit" @edit="editingSection = 'location'"
-              @save="saveSection('location')" @cancel="editingSection = null">
-              <template #default>
-                <div class="space-y-2">
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Address</label>
-                      <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.location.address }}</p>
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">City</label>
-                      <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.location.city }}</p>
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">County</label>
-                      <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.location.county }}</p>
-                    </div>
-                    <div>
-                      <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Country</label>
-                      <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.location.country }}</p>
-                    </div>
-                  </div>
+              <div>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</p>
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-user-circle" class="w-4 h-4 text-gray-400" />
+                  <p v-if="user?.gender" class="text-gray-900 dark:text-white">{{ user.gender }}</p>
+                  <p v-else class="text-gray-500 dark:text-gray-400 italic">Not specified</p>
                 </div>
-              </template>
-              <template #editing>
-                <div class="space-y-3">
-                  <UInput v-model="user.location.address" label="Address" placeholder="123 Main Street" size="sm" />
-                  <UInput v-model="user.location.city" label="City" placeholder="City" size="sm" />
-                  <UInput v-model="user.location.county" label="County" placeholder="County" size="sm" />
-                  <UInput v-model="user.location.country" label="Country" placeholder="Country" size="sm" />
-                </div>
-              </template>
-            </ProfileSection>
-          </div>
+              </div>
 
-          <!-- Right Column (1/3) -->
-          <div class="space-y-6">
-            <!-- Personal Details -->
-            <ProfileSection title="Personal" icon="i-heroicons-user-circle"
-              :is-editing="editingSection === 'personal' || edit" @edit="editingSection = 'personal'"
-              @save="saveSection('personal')" @cancel="editingSection = null">
-              <template #default>
-                <div class="space-y-3">
-                  <div>
-                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Date of Birth</label>
-                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ formatDate(user.date_of_birth, 'long') }}</p>
-                  </div>
-                  <div>
-                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Gender</label>
-                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.gender || 'Not specified' }}</p>
-                  </div>
-                  <div>
-                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Locale</label>
-                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.locale }}</p>
-                  </div>
-                  <div>
-                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Currency</label>
-                    <p class="text-sm text-gray-900 dark:text-gray-100">{{ user.currency }}</p>
-                  </div>
-                </div>
-              </template>
-              <template #editing>
-                <div class="space-y-3">
-                  <UInput v-model="user.date_of_birth" label="Date of Birth" type="date" size="sm" />
-                  <USelect v-model="user.gender" label="Gender" :options="genderOptions" placeholder="Select gender"
-                    size="sm" />
-                  <USelect v-model="user.locale" label="Locale" :options="localeOptions" placeholder="Select locale"
-                    size="sm" />
-                  <USelect v-model="user.currency" label="Currency" :options="currencyOptions"
-                    placeholder="Select currency" size="sm" />
-                </div>
-              </template>
-            </ProfileSection>
-
-      
-            <!-- Available Accounts -->
-            <div v-if="user.account.availableAccounts.length > 0" class="space-y-3">
-              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <UIcon name="i-heroicons-wallet" class="w-4 h-4" />
-                Available Accounts
-              </h3>
-              <div class="space-y-2">
-                <UCard v-for="account in user.account.availableAccounts" :key="account.id"
-                  class="cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-colors"
-                  @click="switchAccount(account.id)">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                        <UIcon name="i-heroicons-briefcase" class="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                      </div>
-                      <div>
-                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ account.name }}</p>
-                        <div class="flex items-center gap-1 mt-0.5">
-                          <UBadge :label="account.status" :color="getStatusColor(account.status)" variant="subtle"
-                            size="xs" />
-                          <UBadge v-if="account.verified" label="Verified" color="green" variant="subtle" size="xs" />
-                        </div>
-                      </div>
-                    </div>
-                    <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-gray-400" />
-                  </div>
-                </UCard>
+              <div v-if="edit" class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                <UInput v-model="user.date_of_birth" type="date" label="Date of Birth" size="sm" />
+                <USelect v-model="user.gender" :options="['Male', 'Female', 'Other', 'Prefer not to say']"
+                  placeholder="Select gender" size="sm" />
               </div>
             </div>
-          </div>
+          </UPageCard>
+
+          <!-- Quick Actions -->
+          <UPageCard spotlight>
+            <template #header>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
+            </template>
+
+            <div class="space-y-3">
+              <UButton icon="i-heroicons-document-duplicate" variant="ghost" class="w-full justify-start"
+                @click="copyUserId">
+                <span class="truncate">Copy User ID</span>
+              </UButton>
+              <UButton icon="i-heroicons-link" variant="ghost" class="w-full justify-start" @click="copyProfileLink">
+                <span class="truncate">Copy Profile Link</span>
+              </UButton>
+              <UButton icon="i-heroicons-qr-code" variant="ghost" class="w-full justify-start" @click="showQRCode">
+                <span class="truncate">Show QR Code</span>
+              </UButton>
+              <UButton icon="i-heroicons-share" variant="ghost" class="w-full justify-start" @click="shareProfile">
+                <span class="truncate">Share Profile</span>
+              </UButton>
+            </div>
+          </UPageCard>
+
+          <!-- Profile Completion -->
+          <UPageCard spotlight v-if="!edit && profileCompletion < 100">
+            <template #header>
+              <div class="flex items-center gap-3">
+                <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Profile Completion</h3>
+              </div>
+            </template>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ profileCompletion }}%
+                  complete</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ completedFields }}/{{ totalFields }}
+                  fields</span>
+              </div>
+              <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500"
+                  :style="{ width: `${profileCompletion}%` }" />
+              </div>
+              <UButton icon="i-heroicons-pencil" color="primary" variant="ghost" class="w-full" @click="toggleEdit">
+                Complete Your Profile
+              </UButton>
+            </div>
+          </UPageCard>
         </div>
       </div>
     </div>
 
-    <!-- Global Save Button -->
-    <Transition name="slide-up">
-      <div v-if="edit && editingSection === null"
-        class="fixed inset-x-0 bottom-0 z-20 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-lg">
-        <div class="container mx-auto px-4 py-4">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Unsaved Changes</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                Review all changes before saving
-              </p>
+    <!-- Global Save Banner -->
+    <Transition enter-active-class="transition-transform duration-300" enter-from-class="translate-y-full"
+      leave-active-class="transition-transform duration-300" leave-to-class="translate-y-full">
+      <div v-if="edit && !editingSection"
+        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 max-w-lg w-full px-4">
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 p-4 w-full">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-amber-500 shrink-0" />
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Unsaved Changes</p>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Save or discard your changes</p>
+              </div>
             </div>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <UButton color="gray" variant="outline" @click="cancelAll" class="flex-1 sm:flex-none" size="sm">
-                Discard All
-              </UButton>
-              <UButton color="primary" @click="saveAll" :loading="saving" class="flex-1 sm:flex-none" size="sm">
-                Save All Changes
-              </UButton>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <UButton label="Discard" variant="ghost" size="sm" class="flex-1 sm:flex-none" @click="cancelEdit" />
+              <UButton label="Save All" color="primary" size="sm" class="flex-1 sm:flex-none" :loading="saving"
+                @click="saveAll" />
             </div>
           </div>
         </div>
       </div>
     </Transition>
 
-    <!-- Profile Picture Upload Modal -->
-    <UModal v-model:open="showProfileUpload">
-      <template #content>
-        <UCard>
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">Update Profile Picture</h3>
-              <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" @click="showProfileUpload = false" />
+    <!-- Profile Picture Modal -->
+    <UModal v-model:open="showProfileModal" :ui="{ container: 'items-center justify-center px-4' }">
+      <template #content >
+
+      <UCard :ui="{
+        base: 'relative overflow-hidden w-full max-w-md',
+        ring: 'ring-0',
+        rounded: 'rounded-2xl',
+        shadow: 'shadow-2xl'
+      }">
+
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Update Profile Picture</h3>
+            <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" @click="showProfileModal = false" />
+          </div>
+        </template>
+
+        <div class="flex flex-col items-center space-y-6">
+          <div class="relative">
+            <div class="w-40 h-40 rounded-2xl overflow-hidden shadow-lg ring-2 ring-white dark:ring-gray-800">
+              <img :src="profilePreview || user?.profile_picture" alt="Preview" class="w-full h-full object-cover" />
             </div>
-          </template>
-
-          <div class="space-y-4">
-            <div class="flex flex-col items-center">
-              <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700">
-                <img :src="profilePicturePreview || user.profile_picture" alt="Profile preview"
-                  class="w-full h-full object-cover" />
-              </div>
-
-              <div class="mt-4 flex gap-2">
-                <UButton icon="i-heroicons-arrow-up-tray" color="primary" @click="triggerFileInput">
-                  Upload Photo
-                </UButton>
-                <UButton icon="i-heroicons-trash" color="red" variant="outline" @click="removeProfilePicture"
-                  :disabled="!user.profile_picture">
-                  Remove
-                </UButton>
-              </div>
-
-              <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleProfilePictureUpload" />
+            <div class="absolute -bottom-3 -right-3">
+              <label class="cursor-pointer">
+                <div
+                  class="p-3 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors">
+                  <UIcon name="i-heroicons-camera" class="w-5 h-5" />
+                </div>
+                <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+              </label>
             </div>
           </div>
-        </UCard>
-      </template>
 
+          <div class="flex gap-3 flex-wrap justify-center">
+            <UButton icon="i-heroicons-photo" @click="triggerFileInput">
+              Choose Photo
+            </UButton>
+            <UButton icon="i-heroicons-trash" color="red" variant="outline" :disabled="!user?.profile_picture"
+              @click="removeProfilePicture">
+              Remove
+            </UButton>
+          </div>
+        </div>
+      </UCard>
+      </template>
     </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-// Interfaces
-interface Email {
-  email: string
-  email_verified: boolean
-}
+import type { User } from '~/types/user'
 
-interface Phone {
-  phone_country_code: string
-  phone_number: string
-  phone_verified: boolean
-}
-
-interface LocationData {
-  country: string
-  county: string
-  state?: string
-  city: string
-  address: string
-  coordinates?: {
-    lat: number
-    long: number
-  }
-}
-
-interface Account {
-  id: string
-  name: string
-  verified: boolean
-  status: string
-}
-
-interface UserAccount {
-  currentAccount: string
-  availableAccounts: Account[]
-}
-
-interface User {
-  account: UserAccount
-  name: string
-  profile_picture: string
-  userName: string
-  publicId: string
-  email: Email
-  phone_number: Phone
-  location: LocationData
-  currency: string
-  locale: string
-  bio: string
-  occupation: string
-  company: string
-  job_title: string
-  industry: string
-  website: string
-  status: 'active' | 'inactive' | 'pending' | 'verified' | 'premium'
-  date_of_birth: string
-  gender: string
-  created_at: string
-  last_active: string
-  verification_level: 'basic' | 'verified' | 'premium'
-}
-
-interface UserStats {
-  properties: number
-  rating: number
-  reviews: number
-  responseRate: number
-  totalViews: number
-  responseTime: string
-}
-
-interface SecuritySettings {
-  twoFactor: boolean
-  loginAlerts: boolean
-  sessionTimeout: number
-  trustedDevices: string[]
-}
-
-interface ShareOption {
-  label: string
-  icon: string
-  click: () => void
-}
-
-// Reusable Profile Section Component
-const ProfileSection = defineComponent({
-  props: {
-    title: String,
-    icon: String,
-    isEditing: Boolean
-  },
-  emits: ['edit', 'save', 'cancel'],
-  setup(props, { emit, slots }) {
-    return () => h(UCard, {
-      class: 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors'
-    }, {
-      header: () => h('div', { class: 'flex items-center justify-between' }, [
-        h('div', { class: 'flex items-center gap-2' }, [
-          h(UIcon, { name: props.icon, class: 'w-5 h-5 text-gray-500 dark:text-gray-400' }),
-          h('h3', { class: 'text-lg font-semibold text-gray-900 dark:text-gray-100' }, props.title)
-        ]),
-        !props.isEditing ? h(UButton, {
-          icon: 'i-heroicons-pencil-square',
-          color: 'gray',
-          variant: 'ghost',
-          size: 'xs',
-          class: 'text-xs',
-          onClick: () => emit('edit')
-        }, 'Edit') : h('div', { class: 'flex gap-2' }, [
-          h(UButton, {
-            icon: 'i-heroicons-x-mark',
-            color: 'gray',
-            variant: 'outline',
-            size: 'xs',
-            onClick: () => emit('cancel')
-          }, 'Cancel'),
-          h(UButton, {
-            icon: 'i-heroicons-check',
-            color: 'primary',
-            size: 'xs',
-            onClick: () => emit('save')
-          }, 'Save')
-        ])
-      ]),
-      default: () => props.isEditing
-        ? slots.editing?.()
-        : slots.default?.()
-    })
-  }
-})
-
-// State
+const user = ref<User | null>(null)
 const edit = ref(false)
 const editingSection = ref<string | null>(null)
 const saving = ref(false)
-const showProfileUpload = ref(false)
-const showSecurityModal = ref(false)
-const profilePicturePreview = ref<string | null>(null)
+const showProfileModal = ref(false)
+const profilePreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement>()
-const unreadNotifications = ref(3)
+const focusPhoneField = ref(false)
+const showProfessionalForm = ref(false)
+const showLocationForm = ref(false)
 
-// User Data with enhanced fields
-const user = ref<User>({
-  account: {
-    currentAccount: 'user',
-    availableAccounts: [
-      { id: '1', name: 'Business Account', verified: true, status: 'active' },
-      { id: '2', name: 'Agent Account', verified: false, status: 'pending' },
-      { id: '3', name: 'Property Manager', verified: true, status: 'active' }
-    ]
-  },
-  name: 'John Doe',
-  profile_picture: 'https://github.com/benjamincanac.png',
-  userName: 'johndoe',
-  publicId: 'USR-7A9B2C4D',
-  email: {
-    email: 'john.doe@example.com',
-    email_verified: true
-  },
-  phone_number: {
-    phone_country_code: '+254',
-    phone_number: '74567890',
-    phone_verified: true
-  },
-  location: {
-    country: 'Kenya',
-    county: 'Nairobi County',
-    state: 'Nairobi',
-    city: 'Nairobi',
-    address: '123 Main Street, Westlands',
-    coordinates: { lat: -1.2921, long: 36.8219 }
-  },
-  currency: 'KES',
-  locale: 'en-KE',
-  bio: 'Real estate professional with 10+ years experience specializing in luxury properties and commercial real estate. Passionate about helping clients find their dream homes.',
-  occupation: 'Real Estate Agent',
-  company: 'Prime Properties Ltd',
-  job_title: 'Senior Agent & Property Consultant',
-  industry: 'Real Estate & Property Management',
-  website: 'https://johndoe.properties',
-  status: 'premium',
-  date_of_birth: '1985-06-15',
-  gender: 'Male',
-  created_at: '2022-01-15T10:30:00Z',
-  last_active: new Date().toISOString(),
-  verification_level: 'premium'
-})
-
-// User Stats
-const userStats = ref<UserStats>({
-  properties: 24,
-  rating: 4.8,
-  reviews: 128,
-  responseRate: 95,
-  totalViews: 2456,
-  responseTime: '< 2 hours'
-})
-
-// Security Settings
-const securitySettings = ref<SecuritySettings>({
-  twoFactor: true,
-  loginAlerts: true,
-  sessionTimeout: 24,
-  trustedDevices: ['iPhone 13', 'MacBook Pro', 'iPad Air']
-})
-
-
-// Options for dropdowns
-const genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say']
-const localeOptions = ['en-KE', 'en-US', 'en-GB', 'sw-KE']
-const currencyOptions = ['KES', 'USD', 'EUR', 'GBP']
-const countryCodes = ['+1', '+44', '+254', '+255', '+256']
-
-
-const userStore = useUserStore()
-
+// Load user data
 onMounted(() => {
-  // wait until user is authenticated / store is ready
-  if (userStore.isAuthenticated) {
-    userStore.fetch_user_profile()
-    userStore.fetch_user_listings()
-  }
-
-  // optional: watch for when the user becomes authenticated later
-  watch(
-    () => userStore.isAuthenticated,
-    (isAuth) => {
-      if (isAuth) {
-        userStore.fetch_user_profile()
-        userStore.fetch_user_listings()
+  user.value = {
+    id: "ad623fd0-a314-4712-bc7c-401a4fa85d8e",
+    public_id: "USR-VML97Y6S",
+    name: "TechMovers techmovers",
+    profile_picture: "https://lh3.googleusercontent.com/a/ACg8ocLGMH4KwkeRGMLSf4AwEYKTR-fgu3d0sD3jNCon-mI2duhSSHU=s96-c",
+    profile_picture_thumbnail: "https://lh3.googleusercontent.com/a/ACg8ocLGMH4KwkeRGMLSf4AwEYKTR-fgu3d0sD3jNCon-mI2duhSSHU=s96-c",
+    email: {
+      email: "techmoversai@gmail.com",
+      email_verified: true
+    },
+    username: "techmoverstechmovers",
+    display_name: "TechMovers techmovers",
+    date_of_birth: null,
+    gender: null,
+    phone_number: {
+      country_code: "+254",
+      number: null,
+      phone_verified: false
+    },
+    bio: null,
+    website: null,
+    tagline: null,
+    occupation: null,
+    current_city: null,
+    current_country: null,
+    company: null,
+    job_title: null,
+    industry: null,
+    location: {
+      city: null,
+      country: null,
+      address: null,
+      county: null,
+      coordinates: {
+        lat: null,
+        long: null
       }
     },
-    { immediate: false } // don't trigger immediately; only when auth changes
-  )
+    status: "ACTIVE",
+    account: {
+      currentAccount: "PERSONAL",
+      availableAccounts: []
+    },
+    last_active: null,
+    currency: "KES",
+    locale: "en-KE",
+    created_at: "2026-01-09T15:42:27.728218+00:00"
+  }
 })
 
-// Share Options
-const shareOptions = [[
-  {
-    label: 'Copy Profile Link',
-    icon: 'i-heroicons-link',
-    click: () => copyProfileLink()
-  },
-  {
-    label: 'Share via WhatsApp',
-    icon: 'i-heroicons-chat-bubble-left-right',
-    click: () => shareViaWhatsApp()
-  },
-  {
-    label: 'Share via Email',
-    icon: 'i-heroicons-envelope',
-    click: () => shareViaEmail()
-  }
-]]
-const addAccount = () => {
-  // Implement add account logic
-  useToast().add({
-    title: 'Add Account',
-    description: 'This feature is coming soon',
-    icon: 'i-heroicons-clock',
-    color: 'info'
-  })
-}
-// Account Dropdown Items
-const accountDropdownItems = ref([
-  [
-    ...user.value.account.availableAccounts.map(account => ({
-      label: account.name,
-      icon: 'i-heroicons-briefcase',
-      badge: {
-        label: account.verified ? 'Verified' : 'Pending',
-        color: account.verified ? 'green' : 'yellow'
-      },
-      click: () => switchAccount(account.id)
-    }))
-  ],
-  [
-    { divider: true }
-  ],
-  [
-    {
-      label: 'Add Account',
-      icon: 'i-heroicons-plus',
-      click: addAccount
-    }
-  ]
+// Computed properties
+const hasProfessionalInfo = computed(() => {
+  return !!(user.value?.occupation || user.value?.company || user.value?.job_title ||
+    user.value?.industry || user.value?.website)
+})
+
+const hasLocationInfo = computed(() => {
+  return !!(user.value?.location?.city || user.value?.location?.country ||
+    user.value?.location?.address || user.value?.current_city || user.value?.current_country)
+})
+
+const professionalFields = computed(() => [
+  { key: 'occupation', label: 'Occupation', value: user.value?.occupation },
+  { key: 'company', label: 'Company', value: user.value?.company },
+  { key: 'job_title', label: 'Job Title', value: user.value?.job_title },
+  { key: 'industry', label: 'Industry', value: user.value?.industry },
+  { key: 'website', label: 'Website', value: user.value?.website }
+].filter(field => field.value || edit.value))
+
+const locationFields = computed(() => [
+  { key: 'city', label: 'City', value: user.value?.location?.city || user.value?.current_city },
+  { key: 'country', label: 'Country', value: user.value?.location?.country || user.value?.current_country },
+  { key: 'county', label: 'County/State', value: user.value?.location?.county },
+  { key: 'address', label: 'Address', value: user.value?.location?.address }
 ])
 
+const profileCompletion = computed(() => {
+  const fields = [
+    user.value?.display_name,
+    user.value?.username,
+    user.value?.bio,
+    user.value?.phone_number?.number,
+    user.value?.occupation,
+    user.value?.company,
+    user.value?.date_of_birth,
+    user.value?.gender,
+    user.value?.location?.city,
+    user.value?.location?.country
+  ]
 
-// Computed
-const professionalFields = computed(() => ({
-  occupation: user.value.occupation,
-  company: user.value.company,
-  job_title: user.value.job_title,
-  industry: user.value.industry,
-  website: user.value.website
-}))
+  const completed = fields.filter(Boolean).length
+  const total = fields.length
+  return Math.round((completed / total) * 100)
+})
+
+const completedFields = computed(() => {
+  const fields = [
+    user.value?.display_name,
+    user.value?.username,
+    user.value?.bio,
+    user.value?.phone_number?.number,
+    user.value?.occupation,
+    user.value?.company,
+    user.value?.date_of_birth,
+    user.value?.gender,
+    user.value?.location?.city,
+    user.value?.location?.country
+  ]
+  return fields.filter(Boolean).length
+})
+
+const totalFields = computed(() => 10) // Total fields we're tracking
 
 // Methods
 const toggleEdit = () => {
   edit.value = !edit.value
-  if (!edit.value) {
-    editingSection.value = null
-    saveAll()
+  editingSection.value = null
+  focusPhoneField.value = false
+  showProfessionalForm.value = false
+  showLocationForm.value = false
+  if (!edit.value) saveAll()
+}
+
+const startEdit = (section: string) => {
+  edit.value = true
+  editingSection.value = section
+}
+
+const cancelEdit = () => {
+  edit.value = false
+  editingSection.value = null
+  focusPhoneField.value = false
+  showProfessionalForm.value = false
+  showLocationForm.value = false
+  useToast().add({
+    title: 'Changes discarded',
+    icon: 'i-heroicons-x-circle',
+    color: 'gray'
+  })
+}
+
+const saveDisplayName = () => {
+  useToast().add({
+    title: 'Display name updated',
+    icon: 'i-heroicons-check-circle',
+    color: 'emerald'
+  })
+}
+
+const saveUsername = () => {
+  useToast().add({
+    title: 'Username updated',
+    icon: 'i-heroicons-check-circle',
+    color: 'emerald'
+  })
+}
+
+const saveSection = async (section: string) => {
+  saving.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  editingSection.value = null
+  saving.value = false
+
+  useToast().add({
+    title: `${section} updated`,
+    icon: 'i-heroicons-check-circle',
+    color: 'emerald'
+  })
+}
+
+const saveAll = async () => {
+  saving.value = true
+  await new Promise(resolve => setTimeout(resolve, 800))
+
+  edit.value = false
+  editingSection.value = null
+  focusPhoneField.value = false
+  showProfessionalForm.value = false
+  showLocationForm.value = false
+  saving.value = false
+
+  useToast().add({
+    title: 'Profile updated successfully',
+    description: 'All changes have been saved',
+    icon: 'i-heroicons-check-badge',
+    color: 'emerald'
+  })
+}
+
+const shareProfile = async () => {
+  const link = `${window.location.origin}/user/${user.value?.username}`
+  await navigator.clipboard.writeText(link)
+  useToast().add({
+    title: 'Profile link copied',
+    icon: 'i-heroicons-link',
+    color: 'primary'
+  })
+}
+
+const copyUserId = async () => {
+  if (user.value?.public_id) {
+    await navigator.clipboard.writeText(user.value.public_id)
+    useToast().add({
+      title: 'User ID copied',
+      icon: 'i-heroicons-clipboard-document-check',
+      color: 'emerald'
+    })
   }
 }
 
+const copyProfileLink = async () => {
+  const link = `${window.location.origin}/user/${user.value?.username}`
+  await navigator.clipboard.writeText(link)
+  useToast().add({
+    title: 'Profile link copied',
+    icon: 'i-heroicons-link',
+    color: 'emerald'
+  })
+}
+
+const showQRCode = () => {
+  useToast().add({
+    title: 'QR Code',
+    description: 'Feature coming soon',
+    icon: 'i-heroicons-qr-code',
+    color: 'blue'
+  })
+}
+
 const openProfileUpload = () => {
-  if (edit.value) {
-    showProfileUpload.value = true
-  }
+  showProfileModal.value = true
 }
 
 const triggerFileInput = () => {
   fileInput.value?.click()
 }
 
-const handleProfilePictureUpload = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-
+const handleFileUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
-      profilePicturePreview.value = e.target?.result as string
-      // In production, upload to server here
-      user.value.profile_picture = profilePicturePreview.value
-      showProfileUpload.value = false
+      profilePreview.value = e.target?.result as string
+      if (user.value) {
+        user.value.profile_picture = profilePreview.value
+      }
+      showProfileModal.value = false
 
       useToast().add({
         title: 'Profile picture updated',
         icon: 'i-heroicons-check-circle',
-        color: 'green'
+        color: 'emerald'
       })
     }
     reader.readAsDataURL(file)
@@ -755,206 +757,36 @@ const handleProfilePictureUpload = (event: Event) => {
 }
 
 const removeProfilePicture = () => {
-  user.value.profile_picture = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.value.name}`
-  showProfileUpload.value = false
+  if (user.value) {
+    user.value.profile_picture = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.value.name)}&background=random`
+    showProfileModal.value = false
 
-  useToast().add({
-    title: 'Profile picture removed',
-    icon: 'i-heroicons-check-circle',
-    color: 'green'
-  })
-}
-
-const copyPublicId = async () => {
-  try {
-    await navigator.clipboard.writeText(user.value.publicId)
     useToast().add({
-      title: 'Copied!',
-      description: 'Public ID copied to clipboard',
-      icon: 'i-heroicons-check',
-      color: 'green'
-    })
-  } catch {
-    useToast().add({
-      title: 'Error',
-      description: 'Failed to copy',
-      icon: 'i-heroicons-exclamation-triangle',
-      color: 'red'
+      title: 'Profile picture removed',
+      icon: 'i-heroicons-check-circle',
+      color: 'emerald'
     })
   }
 }
-
-const copyProfileLink = async () => {
-  const link = `${window.location.origin}/profile/${user.value.userName}`
-  try {
-    await navigator.clipboard.writeText(link)
-    useToast().add({
-      title: 'Link copied!',
-      description: 'Profile link copied to clipboard',
-      icon: 'i-heroicons-check',
-      color: 'green'
-    })
-  } catch {
-    useToast().add({
-      title: 'Error',
-      description: 'Failed to copy link',
-      icon: 'i-heroicons-exclamation-triangle',
-      color: 'red'
-    })
-  }
-}
-
-const shareViaWhatsApp = () => {
-  const text = `Check out ${user.value.name}'s profile on HouseHunter: ${window.location.origin}/profile/${user.value.userName}`
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`
-  window.open(url, '_blank')
-}
-
-const shareViaEmail = () => {
-  const subject = `${user.value.name}'s HouseHunter Profile`
-  const body = `Check out ${user.value.name}'s profile: ${window.location.origin}/profile/${user.value.userName}`
-  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-}
-
-const saveName = () => {
-  // API call to save name
-  useToast().add({
-    title: 'Name updated',
-    icon: 'i-heroicons-check-circle',
-    color: 'green'
-  })
-}
-
-const saveUsername = () => {
-  // API call to save username
-  useToast().add({
-    title: 'Username updated',
-    icon: 'i-heroicons-check-circle',
-    color: 'green'
-  })
-}
-
-const saveSection = (section: string) => {
-  saving.value = true
-  // API call to save section
-  setTimeout(() => {
-    editingSection.value = null
-    saving.value = false
-    useToast().add({
-      title: `${section.charAt(0).toUpperCase() + section.slice(1)} updated`,
-      icon: 'i-heroicons-check-circle',
-      color: 'green'
-    })
-  }, 500)
-}
-
-const saveAll = () => {
-  saving.value = true
-  // API call to save all changes
-  setTimeout(() => {
-    edit.value = false
-    editingSection.value = null
-    saving.value = false
-    useToast().add({
-      title: 'All changes saved',
-      icon: 'i-heroicons-check-circle',
-      color: 'green'
-    })
-  }, 1000)
-}
-
-const cancelAll = () => {
-  edit.value = false
-  editingSection.value = null
-  // Reset changes here if needed
-  useToast().add({
-    title: 'Changes discarded',
-    icon: 'i-heroicons-information-circle',
-    color: 'gray'
-  })
-}
-
-const changePassword = () => {
-  // Implement password change logic
-  useToast().add({
-    title: 'Password change requested',
-    description: 'Check your email for instructions',
-    icon: 'i-heroicons-envelope',
-    color: 'blue'
-  })
-}
-
-const switchAccount = (accountId: string) => {
-  const account = user.value.account.availableAccounts.find(a => a.id === accountId)
-  if (account) {
-    user.value.account.currentAccount = account.name
-    useToast().add({
-      title: 'Switched account',
-      description: `Now using ${account.name}`,
-      icon: 'i-heroicons-check-circle',
-      color: 'green'
-    })
-  }
-}
-
-
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'active':
-    case 'verified':
-    case 'premium':
-      return 'green'
-    case 'pending':
-      return 'yellow'
-    case 'inactive':
-      return 'red'
-    default:
-      return 'gray'
+  const colors: Record<string, string> = {
+    'ACTIVE': 'emerald',
+    'INACTIVE': 'red',
+    'PENDING': 'amber',
+    'VERIFIED': 'blue',
+    'PERSONAL': 'purple'
   }
+  return colors[status] || 'gray'
 }
 
-// Helper function for different date formats
-const formatDate = (dateString: string, format: 'short' | 'long' = 'long') => {
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return 'Not set'
   const date = new Date(dateString)
-  if (format === 'short') {
-    return date.toLocaleDateString('en-KE', { month: 'short', year: 'numeric' })
-  }
-  return date.toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })
+  return date.toLocaleDateString('en-KE', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 </script>
-
-<style scoped>
-/* Enhanced transitions */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-/* Profile picture hover effect */
-.group:hover .group-hover\:opacity-100 {
-  opacity: 1;
-}
-
-/* Smooth card hover effects */
-.hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* Better focus states */
-:focus-visible {
-  outline: 2px solid rgba(var(--color-primary-500), 0.5);
-  outline-offset: 2px;
-}
-</style>
