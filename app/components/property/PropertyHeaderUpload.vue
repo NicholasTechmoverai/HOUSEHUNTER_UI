@@ -52,8 +52,8 @@
               <span class="text-xs text-gray-500">Select property type</span>
               <span class="text-[10px] uppercase text-gray-400">{{ formData?.category?.label || 'Not set' }}</span>
             </div>
-            <USelectMenu v-model="formData.category" :items="categories" value-key="value"
-              option-key="label" placeholder="Select Type" size="lg" class="min-w-20 w-full" />
+            <USelectMenu v-model="formData.category" :items="categories" labelKey="label" valueKey="value"
+              placeholder="Select Type" size="lg" class="min-w-20 w-full" />
           </div>
 
           <div class="space-y-2">
