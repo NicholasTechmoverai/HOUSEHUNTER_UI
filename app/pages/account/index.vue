@@ -362,6 +362,11 @@
             </div>
           </UPageCard>
 
+          <div>
+            <ScrollerPropertyList :items="userRentalProperties" :total="userRentalProperties.length" :loading="false"
+              @load-more="fetchlistings" />
+          </div>
+
           <!-- Quick Actions -->
           <UPageCard spotlight>
             <template #header>
@@ -565,7 +570,8 @@ const allowed_country_codes = ref([])
 const allowed_genders = ref([])
 const allowed_currencies = ref([])
 const storeUser = computed(() => userStore.userprofile)
-
+const userRentalProperties = ref([])
+const listing_loading = ref<boolean>(false)
 watch(
   () => userStore.userprofile,
   (val) => {
@@ -574,18 +580,27 @@ watch(
   { immediate: true }
 )
 
-// ---------------- Load All Utilities ----------------
 onMounted(async () => {
-  await userStore.fetch_user_profile()
-
-  await useAsyncData('user_listings', () =>
-    userStore.fetch_user_listings()
-  )
+  userStore.fetch_user_profile()
+  fetchlistings({offset:0,limit:10})
 
   const gendersRes = await load_genders()
-  allowed_genders.value = gendersRes.data || []
-
+  allowed_genders.value = gendersRes?.data || []
 })
+
+const fetchlistings = async ({ offset, limit }) => {
+  listing_loading.value = true
+  // const res = await userStore.fetch_user_listings({ offset, limit })
+  try {
+    const res = await userStore.fetch_user_listings()
+    userRentalProperties.value.push(...res.data.rentals)
+  } catch (err) {
+    console.error(err)
+    userRentalProperties.value = []
+  } finally {
+    listing_loading.value = false
+  }
+}
 
 
 // Computed properties

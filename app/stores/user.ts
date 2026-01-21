@@ -4,7 +4,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     user: null as any,
     userprofile: null as any,
-    
+
     token: null as string | null,
     loading: false,
     breadCrumbItems: [],
@@ -34,7 +34,7 @@ export const useUserStore = defineStore('user', {
     setUser(user: any, token?: string) {
       this.user = user
       if (token) this.token = token
-      
+
     },
 
     clearUser() {
@@ -242,14 +242,14 @@ export const useUserStore = defineStore('user', {
     },
 
     async updateUserProfile(data: Record<string, any>) {
-      const { patch,post } = useApi()
+      const { patch, post } = useApi()
       const endpoints = useEndpoints()
 
       this.loading = true
       this.error = null
 
       try {
-        const response = await post(endpoints.user.updateProfile(this.user.public_id), data,true)
+        const response = await post(endpoints.user.updateProfile(this.user.public_id), data, true)
 
         if (response.success) {
           this.user = { ...this.user, ...response.user }
@@ -353,7 +353,7 @@ export const useUserStore = defineStore('user', {
 
         if (response.success) {
           this.userprofile = response.data
-          console.log("received user",response.data)
+          console.log("received user", response.data)
           return {
             success: true,
             message: 'Location saved successfully',
@@ -376,23 +376,18 @@ export const useUserStore = defineStore('user', {
       } finally {
       }
     },
-    async fetch_user_listings(id:string  | null = null) {
+    async fetch_user_listings(id: string | null = null) {
       try {
         const { post } = useApi()
         const endpoints = useEndpoints()
 
         const response = await post(
-          endpoints.user.listings(id?id :this.user.public_id ),
+          endpoints.user.listings(id ?? this.user.public_id),
           {}, true
         )
 
         if (response.success) {
-          this.userlistings = response.data.listings
-          return {
-            success: true,
-            message: 'listings loaded successfully',
-            data: response
-          }
+          return response
         } else {
           return {
             success: false,
@@ -422,7 +417,7 @@ export const useUserStore = defineStore('user', {
       if (!this.user) {
         useGoogleOneTap()
       }
-      if(this.token){
+      if (this.token) {
         this.renewT
       }
     },
