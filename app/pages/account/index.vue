@@ -128,7 +128,8 @@
             <UIcon name="i-heroicons-currency-dollar" class="w-7 h-7 text-amber-500 mx-auto mb-2" />
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Currency</p>
             <div v-if="edit" class="mt-2">
-              <USelectMenu v-model="user.currency" :items="allowed_currencies" valueKey="value" size="xs" class="w-30 text-sm" />
+              <USelectMenu v-model="user.currency" :items="allowed_currencies" valueKey="value" size="xs"
+                class="w-30 text-sm" />
             </div>
             <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
               {{ user?.currency || 'Set currency' }}
@@ -347,7 +348,8 @@
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</p>
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-user-circle" class="w-4 h-4 text-gray-400" />
-                  <p v-if="user?.gender" class="text-gray-900 dark:text-white">{{ allowed_genders.find(g => g.value === user.gender)?.label || 'Not specified' }}</p>
+                  <p v-if="user?.gender" class="text-gray-900 dark:text-white">{{allowed_genders.find(g => g.value ===
+                    user.gender)?.label || 'Not specified'}}</p>
                   <p v-else class="text-gray-500 dark:text-gray-400 italic">Not specified</p>
                 </div>
               </div>
@@ -573,19 +575,6 @@ watch(
 )
 
 // ---------------- Load All Utilities ----------------
-async function load_utilities() {
-  const [gendersRes, countriesRes, currenciesRes] = await Promise.all([
-    load_genders(),
-    load_country_codes(),
-    load_currencies(),
-  ])
-
-  allowed_country_codes.value = countriesRes.data || []
-  allowed_currencies.value = currenciesRes.data || []
-  allowed_genders.value = gendersRes.data || []
-}
-
-// ---------------- Mounted Hook ----------------
 onMounted(async () => {
   await userStore.fetch_user_profile()
 
@@ -593,7 +582,9 @@ onMounted(async () => {
     userStore.fetch_user_listings()
   )
 
-  await load_utilities()
+  const gendersRes = await load_genders()
+  allowed_genders.value = gendersRes.data || []
+
 })
 
 
@@ -661,18 +652,29 @@ const completedFields = computed(() => {
 const totalFields = computed(() => 10) // Total fields we're tracking
 
 // Methods
-const toggleEdit = () => {
+const toggleEdit = async () => {
   edit.value = !edit.value
   editingSection.value = null
   focusPhoneField.value = false
   showProfessionalForm.value = false
   showLocationForm.value = false
-  if (!edit.value) saveAll()
+  if (edit.value) {
+    const countriesRes = await load_country_codes()
+    allowed_country_codes.value = countriesRes.data || []
+
+    const currenciesRes = await load_currencies()
+    allowed_currencies.value = currenciesRes.data || []
+  } else {
+    saveAll()
+    allowed_currencies.value = []
+    allowed_country_codes.value = []
+  }
 }
 
 const startEdit = (section: string) => {
   edit.value = true
   editingSection.value = section
+
 }
 
 const cancelEdit = () => {
@@ -686,6 +688,7 @@ const cancelEdit = () => {
     icon: 'i-heroicons-x-circle',
     color: 'gray'
   })
+
 }
 
 const saveDisplayName = () => {

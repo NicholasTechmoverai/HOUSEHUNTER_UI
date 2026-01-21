@@ -1,9 +1,10 @@
 
+// ---------------- Load Genders ----------------
+export const load_genders = async () => {
+
 const { get } = useApi()
 const endpoint = useEndpoints()
 
-// ---------------- Load Genders ----------------
-export const load_genders = async () => {
   try {
     const res = await get(endpoint.utilities.genders)
     if (res.success) {
@@ -20,6 +21,10 @@ export const load_genders = async () => {
 
 // ---------------- Load Countries ----------------
 export const load_country_codes = async () => {
+
+const { get } = useApi()
+const endpoint = useEndpoints()
+
   try {
     const res = await get(endpoint.utilities.countries)
     if (res.success) {
@@ -36,6 +41,10 @@ export const load_country_codes = async () => {
 
 // ---------------- Load Currencies ----------------
 export const load_currencies = async () => {
+
+const { get } = useApi()
+const endpoint = useEndpoints()
+
   try {
     const res = await get(endpoint.utilities.currencies)
     if (res.success) {
