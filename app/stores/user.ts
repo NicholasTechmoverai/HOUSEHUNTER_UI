@@ -241,15 +241,15 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async updateProfile(data: Record<string, any>) {
-      const { patch } = useApi()
+    async updateUserProfile(data: Record<string, any>) {
+      const { patch,post } = useApi()
       const endpoints = useEndpoints()
 
       this.loading = true
       this.error = null
 
       try {
-        const response = await patch(endpoints.user.profile, data)
+        const response = await post(endpoints.user.updateProfile(this.user.public_id), data,true)
 
         if (response.success) {
           this.user = { ...this.user, ...response.user }

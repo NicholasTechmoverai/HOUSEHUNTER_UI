@@ -115,8 +115,7 @@
             <UIcon name="i-heroicons-globe-alt" class="w-7 h-7 text-emerald-500 mx-auto mb-2" />
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Locale</p>
             <div v-if="edit" class="mt-2">
-              <USelect v-model="user.locale" :options="['en-KE', 'en-US', 'en-GB', 'sw-KE']" size="xs"
-                class="text-sm" />
+              <USelect v-model="user.locale" :items="['en-KE', 'en-US', 'en-GB', 'sw-KE']" size="xs" class="text-sm" />
             </div>
             <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
               {{ user?.locale || 'Set your locale' }}
@@ -129,7 +128,7 @@
             <UIcon name="i-heroicons-currency-dollar" class="w-7 h-7 text-amber-500 mx-auto mb-2" />
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Currency</p>
             <div v-if="edit" class="mt-2">
-              <USelect v-model="user.currency" :options="['KES', 'USD', 'EUR', 'GBP']" size="xs" class="text-sm" />
+              <USelectMenu v-model="user.currency" :items="allowed_currencies" valueKey="value" size="xs" class="w-30 text-sm" />
             </div>
             <p v-else class="text-base font-semibold text-gray-900 dark:text-white">
               {{ user?.currency || 'Set currency' }}
@@ -230,8 +229,18 @@
                 <div v-if="edit || focusPhoneField"
                   class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
                   <div class="flex gap-3">
-                    <USelect v-model="user.phone_number.country_code" :options="['+254', '+1', '+44', '+255']"
-                      placeholder="Code" size="sm" class="w-24" />
+                    <USelectMenu v-model="user.phone_number.country_code" arrow :items="allowed_country_codes"
+                      labelKey="dialCode" valueKey="dialCode" key="id" class="w-28" size="sm">
+                      <template #leading="{ modelValue }">
+                        <span v-if="modelValue">
+                          {{
+                            allowed_country_codes.find(c => c.dialCode === modelValue)?.emoji || ""
+                          }}
+                        </span>
+                      </template>
+                    </USelectMenu>
+
+
                     <UInput v-model="user.phone_number.number" placeholder="Phone number" size="sm" class="flex-1" />
                   </div>
                   <div class="flex items-center gap-3">
@@ -338,14 +347,14 @@
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</p>
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-user-circle" class="w-4 h-4 text-gray-400" />
-                  <p v-if="user?.gender" class="text-gray-900 dark:text-white">{{ user.gender }}</p>
+                  <p v-if="user?.gender" class="text-gray-900 dark:text-white">{{ allowed_genders.find(g => g.value === user.gender)?.label || 'Not specified' }}</p>
                   <p v-else class="text-gray-500 dark:text-gray-400 italic">Not specified</p>
                 </div>
               </div>
 
               <div v-if="edit" class="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-4">
                 <UInput v-model="user.date_of_birth" type="date" label="Date of Birth" size="sm" />
-                <USelect v-model="user.gender" :options="['Male', 'Female', 'Other', 'Prefer not to say']"
+                <USelect option-key="label" value-key="value" v-model="user.gender" :items="allowed_genders"
                   placeholder="Select gender" size="sm" />
               </div>
             </div>
@@ -550,7 +559,9 @@ const fileInput = ref<HTMLInputElement>()
 const focusPhoneField = ref(false)
 const showProfessionalForm = ref(false)
 const showLocationForm = ref(false)
-
+const allowed_country_codes = ref([])
+const allowed_genders = ref([])
+const allowed_currencies = ref([])
 const storeUser = computed(() => userStore.userprofile)
 
 watch(
@@ -561,14 +572,30 @@ watch(
   { immediate: true }
 )
 
-onMounted(async () => {
-  userStore.fetch_user_profile()
+// ---------------- Load All Utilities ----------------
+async function load_utilities() {
+  const [gendersRes, countriesRes, currenciesRes] = await Promise.all([
+    load_genders(),
+    load_country_codes(),
+    load_currencies(),
+  ])
 
+  allowed_country_codes.value = countriesRes.data || []
+  allowed_currencies.value = currenciesRes.data || []
+  allowed_genders.value = gendersRes.data || []
+}
+
+// ---------------- Mounted Hook ----------------
+onMounted(async () => {
+  await userStore.fetch_user_profile()
 
   await useAsyncData('user_listings', () =>
     userStore.fetch_user_listings()
   )
+
+  await load_utilities()
 })
+
 
 // Computed properties
 const hasProfessionalInfo = computed(() => {
@@ -693,7 +720,7 @@ const saveSection = async (section: string) => {
 
 const saveAll = async () => {
   saving.value = true
-  await userStore.update_user_profile(user.value)
+  await userStore.updateUserProfile(user.value)
 
   edit.value = false
   editingSection.value = null
@@ -812,5 +839,6 @@ const formatDate = (dateString: string | null) => {
     day: 'numeric'
   })
 }
+
 
 </script>

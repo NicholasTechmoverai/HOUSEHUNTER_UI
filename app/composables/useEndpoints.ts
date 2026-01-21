@@ -5,8 +5,11 @@ export const useEndpoints = () => {
     public: {
       info: (infoName: string) => `/public/${infoName}/info`,
     },
-    utilities:{
-      propertyCategories:'/utilities/property-categories'
+    utilities: {
+      propertyCategories: '/utilities/property-categories',
+      countries: "/utilities/countries",
+      genders: "/utilities/allowed-genders",
+      currencies: "/utilities/currencies",
     },
     user: {
       login: '/auth/login',
@@ -15,7 +18,7 @@ export const useEndpoints = () => {
       searchSuggestions: '/user/search/suggestions',
       searhHistory: (id: string) => `/user/${id}/search-history`,
       getById: (id: string) => `/user/${id}`,
-      updateProfile: (id: string) => `/user/${id}`,
+      updateProfile: (id: string) => `/user/${id}/profile`,
       uploadAvatar: (id: string) => `/user/${id}/avatar`,
       changePassword: (id: string) => `/user/${id}/change-password`,
       getFavorites: (id: string) => `/user/${id}/favorites`,
@@ -27,11 +30,11 @@ export const useEndpoints = () => {
 
     auth: {
       googleLogin: `${apiBase}/api/v1/auth/google_login`,
-      oneTapGoogleLogin:`/auth/onetap-google-login`,
+      oneTapGoogleLogin: `/auth/onetap-google-login`,
       facebookLogin: `${apiBase}/api/v1/auth/facebook_login`,
       sendVerificationCode: '/auth/verification/send-code',
       verifyCode: '/auth/verification/verify-code',
-      renewToken:(id:string) => `/auth/${id}/new-token`,
+      renewToken: (id: string) => `/auth/${id}/new-token`,
       requestPasswordReset: '/auth/password/request-reset',
       resetPassword: '/auth/password/reset',
       changePassword: '/auth/password/change',
@@ -40,9 +43,9 @@ export const useEndpoints = () => {
     rental: {
       create: '/rental/',
       list: '/rental/',
-      listTrending:'/rentals/trending',
-      listFeatured:'/rentals/featured',
-      listInteractive:'/rentals/intractive',
+      listTrending: '/rentals/trending',
+      listFeatured: '/rentals/featured',
+      listInteractive: '/rentals/intractive',
 
       getById: (id: string) => `/rental/${id}`,
       getByIdForEdit: (id: string) => `/rental/${id}/for-edit`,
@@ -113,7 +116,7 @@ export const useEndpoints = () => {
       search: '/rental/search',
       featured: '/rental/featured',
     },
-    agent:{
+    agent: {
       init: (id: string) => `/agent/${id}/init`,
       create: '/agent/create',
       update: (id: string) => `/agent/${id}/update`,
