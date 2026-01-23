@@ -2,16 +2,21 @@ import { useApi } from '#imports'
 import { defineStore } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
 
-export interface ExtraFee {
-    id: string
-    description?: string
-    amount: number | string
+interface ExtraFee {
+  id: string
+  name: string
+  code: string
+  is_included: boolean
+  description: string
+  amount: number | null
+  icon?: string
 }
 
 export interface PropertyPrice {
-    amount: number
+    amount: number | null
     period: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually'
     currency: string
+    discount:number | null
 
     depositAmount: number | null
     depositType: 'One month rent' | 'Two months rent' | 'Fixed amount' | 'Negotiable' | null
@@ -43,7 +48,8 @@ const defaultLocationData: LocationUploadData = {
 
 
 const defaultPriceForm: PropertyPrice = {
-    amount: '',
+    amount: null,
+    discount: null,
     period: 'monthly',
     currency: 'KES',
     depositAmount: null,
@@ -216,7 +222,7 @@ const createEditRentalSession = (data: any): OngoingCreate => {
 
     return {
         id: data.id,
-        rentalId: data.public_id,
+        rentalId: data.id,
         headInfo: createSection(data.head_info),
         location: createSection(data.location_info),
         price: createSection(data.pricing),
